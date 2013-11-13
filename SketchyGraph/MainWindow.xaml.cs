@@ -29,6 +29,7 @@ namespace SketchyGraph
         Microsoft.Win32.OpenFileDialog loadDlg = new Microsoft.Win32.OpenFileDialog();
         List<Stroke> selected = new List<Stroke>();
         List<Samples> samples = new List<Samples>();
+        bool flagchart = false;
 
         public MainWindow()
         {
@@ -439,9 +440,23 @@ namespace SketchyGraph
                         InkCanvas.SetLeft(t, r.Left + 100);
                         InkCanvas.SetTop(t, r.Top + 100);
                         PaperInk.Children.Add(t);
+                        flagchart = true;
+                    }
+                    else if (result.Item2 == "+" && flagchart)
+                    {
+                        flagchart = false;
+                        foreach(UIElement el in PaperInk.Children){
+                            if (el is TextBox) {
+                                TextBox l = (TextBox)el;
+                                l.Text = "GraphXY";
+                            }
+                        }
                     }
                     else
+                    {
                         debugtxt.Text = result.Item2;
+                        flagchart = false;
+                    }
                 }
                 else
                     debugtxt.Text = "Non recognized";
