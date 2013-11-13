@@ -343,8 +343,9 @@ namespace SketchyGraph
                         PaperInk.Strokes.RemoveAt(i);
                     }
                 PaperInk.Strokes.Remove(e.Stroke);
+                debugtxt.Text = "Scribble";
             }
-            else if (gest.RecognizeGesture(resampled, corners) == "Grouping")
+            /*else if (gest.RecognizeGesture(resampled, corners) == "Grouping")
             {
                 foreach (Stroke stroke in PaperInk.Strokes)
                 {
@@ -367,7 +368,7 @@ namespace SketchyGraph
                     }
                 }
                 PaperInk.Strokes.RemoveAt(PaperInk.Strokes.Count - 1);
-            }
+            }*/
             else
             {
                 string el;
@@ -393,7 +394,28 @@ namespace SketchyGraph
             if (selected.Count == 1)
             {
                 Tuple<double, string, double> result = RecognizedSelected(selected, true);
-                debugtxt.Text = result.Item2;
+
+                if (result.Item1 > 0.75)
+                {
+                    if (result.Item2 == "piechart")
+                    {
+                        Rect r = e.Stroke.GetBounds();
+                        TextBox t = new TextBox();
+                        t.FontSize = 15;
+                        t.Width = 200;
+                        t.Height = 40;
+                        t.Text = result.Item2;
+                        t.Visibility = Visibility.Visible;
+                        InkCanvas.SetLeft(t, r.Left + 100);
+                        InkCanvas.SetTop(t, r.Top + r.Height + 50);
+                        PaperInk.Children.Add(t);
+                    }
+                    else
+                        debugtxt.Text = result.Item2;
+                }
+                else
+                    debugtxt.Text = "Non recognized";
+
                 val = result.Item2;
             }
             else if (selected.Count > 1)
@@ -403,7 +425,26 @@ namespace SketchyGraph
                 Tuple<List<Stroke>, List<int>> temp = RobustIntersection(first, selected);
                 Tuple<double, string, double> result = RecognizedSelected(temp.Item1, true);
 
-                debugtxt.Text = result.Item2;
+                if (result.Item1 > 0.75)
+                {
+                    if (result.Item2 == "barchart")
+                    {
+                        Rect r = e.Stroke.GetBounds();
+                        TextBox t = new TextBox();
+                        t.FontSize = 15;
+                        t.Width = 200;
+                        t.Height = 40;
+                        t.Text = result.Item2;
+                        t.Visibility = Visibility.Visible;
+                        InkCanvas.SetLeft(t, r.Left + 100);
+                        InkCanvas.SetTop(t, r.Top + 100);
+                        PaperInk.Children.Add(t);
+                    }
+                    else
+                        debugtxt.Text = result.Item2;
+                }
+                else
+                    debugtxt.Text = "Non recognized";
 
                 if (result.Item2 == "+" || (temp.Item1.Count >= 2 && temp.Item1.Count < 5))
                     selected.Insert(0, first);

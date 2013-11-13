@@ -53,3 +53,22 @@ C:\Users\andnovar\Documents\Clases UCF\Pen Based User Interfaces\SketchyGraph\Sk
 C:\Users\andnovar\Documents\Clases UCF\Pen Based User Interfaces\SketchyGraph\SketchyGraph\bin\Debug\NCalc.dll
 C:\Users\andnovar\Documents\Clases UCF\Pen Based User Interfaces\SketchyGraph\SketchyGraph\obj\x86\Debug\SketchyGraph.exe
 C:\Users\andnovar\Documents\Clases UCF\Pen Based User Interfaces\SketchyGraph\SketchyGraph\obj\x86\Debug\SketchyGraph.pdb
+C:\Users\Ross\Documents\GitHub\SketchyGraph\SketchyGraph\bin\Debug\SketchyGraph.exe.config
+C:\Users\Ross\Documents\GitHub\SketchyGraph\SketchyGraph\obj\x86\Debug\SketchyGraph.exe
+C:\Users\Ross\Documents\GitHub\SketchyGraph\SketchyGraph\obj\x86\Debug\SketchyGraph.pdb
+C:\Users\Ross\Documents\GitHub\SketchyGraph\SketchyGraph\bin\Debug\SketchyGraph.exe
+C:\Users\Ross\Documents\GitHub\SketchyGraph\SketchyGraph\bin\Debug\SketchyGraph.pdb
+C:\Users\Ross\Documents\GitHub\SketchyGraph\SketchyGraph\bin\Debug\IACore.dll
+C:\Users\Ross\Documents\GitHub\SketchyGraph\SketchyGraph\bin\Debug\IALoader.dll
+C:\Users\Ross\Documents\GitHub\SketchyGraph\SketchyGraph\bin\Debug\IAWinFX.dll
+C:\Users\Ross\Documents\GitHub\SketchyGraph\SketchyGraph\bin\Debug\NCalc.dll
+C:\Users\Ross\Documents\GitHub\SketchyGraph\SketchyGraph\obj\x86\Debug\ResolveAssemblyReference.cache
+C:\Users\Ross\Documents\GitHub\SketchyGraph\SketchyGraph\obj\x86\Debug\MainWindow.baml
+C:\Users\Ross\Documents\GitHub\SketchyGraph\SketchyGraph\obj\x86\Debug\MainWindow.g.cs
+C:\Users\Ross\Documents\GitHub\SketchyGraph\SketchyGraph\obj\x86\Debug\App.g.cs
+C:\Users\Ross\Documents\GitHub\SketchyGraph\SketchyGraph\obj\x86\Debug\SketchyGraph_Content.g.cs
+C:\Users\Ross\Documents\GitHub\SketchyGraph\SketchyGraph\obj\x86\Debug\SketchyGraph_MarkupCompile.cache
+C:\Users\Ross\Documents\GitHub\SketchyGraph\SketchyGraph\obj\x86\Debug\SketchyGraph.g.resources
+C:\Users\Ross\Documents\GitHub\SketchyGraph\SketchyGraph\obj\x86\Debug\SketchyGraph.Properties.Resources.resources
+C:\Users\Ross\Documents\GitHub\SketchyGraph\SketchyGraph\obj\x86\Debug\GenerateResource.read.1.tlog
+C:\Users\Ross\Documents\GitHub\SketchyGraph\SketchyGraph\obj\x86\Debug\GenerateResource.write.1.tlog
