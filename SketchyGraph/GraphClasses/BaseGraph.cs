@@ -18,6 +18,5 @@ namespace SketchyGraph
         {
             elements.Add(element);
         }
-
     }
 }

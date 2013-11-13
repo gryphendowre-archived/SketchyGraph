@@ -75,6 +75,14 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Recognizer\Circle.cs" />
+    <Compile Include="Recognizer\Gesture.cs" />
+    <Compile Include="Recognizer\Recognizer.cs" />
+    <Compile Include="Recognizer\Samples.cs" />
+    <Compile Include="Recognizer\Straw.cs" />
+    <Compile Include="Recognizer\Trazo.cs" />
+    <Compile Include="Recognizer\Unistroke.cs" />
+    <Compile Include="Recognizer\Utils.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -83,6 +91,12 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="GraphClasses\BaseGraph.cs" />
+    <Compile Include="GraphClasses\Charts\BarChart.cs" />
+    <Compile Include="GraphClasses\Charts\ChartClass.cs" />
+    <Compile Include="GraphClasses\Charts\PieChart.cs" />
+    <Compile Include="GraphClasses\Graphs\GraphClass.cs" />
+    <Compile Include="GraphClasses\Graphs\XYPlot.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -127,6 +141,7 @@
     <Resource Include="ToolBarGraphics\New.PNG" />
     <Resource Include="ToolBarGraphics\Save.PNG" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
