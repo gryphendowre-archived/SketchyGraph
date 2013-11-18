@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Windows;
 
-namespace SketchyGraph.GraphClasses.Graphs
+namespace SketchyGraph
 {
-    class XYPlot : GraphClass
+    class XYPlot : AxisPlot
     {
         public XYPlot(int xMax, int xMin, int yMax, int yMin)
         {

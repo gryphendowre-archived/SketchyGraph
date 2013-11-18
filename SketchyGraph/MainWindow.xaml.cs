@@ -29,6 +29,7 @@ namespace SketchyGraph
         Microsoft.Win32.OpenFileDialog loadDlg = new Microsoft.Win32.OpenFileDialog();
         List<Stroke> selected = new List<Stroke>();
         List<Samples> samples = new List<Samples>();
+        List<BaseGraph> graphs = new List<BaseGraph>();
         bool flagchart = false;
 
         public MainWindow()
@@ -374,6 +375,15 @@ namespace SketchyGraph
             {
                 string el;
                 el = RealTimeGestureRecognition(e);
+                foreach (BaseGraph bgraph in graphs)
+                {
+                    Rectangle rect = new Rectangle();
+                    rect.Width = bgraph.GetBoundingBox().Width;
+                    rect.Height = bgraph.GetBoundingBox().Height;
+                    rect.Stroke = Brushes.Blue;
+                    rect.StrokeThickness = 2;
+                    PaperInk.Children.Add(rect);
+                }
                 //debugtxt.Text = selected.Count.ToString();
                 //tree = new Node<string>(el);
             }
@@ -441,6 +451,10 @@ namespace SketchyGraph
                         InkCanvas.SetTop(t, r.Top + 100);
                         PaperInk.Children.Add(t);
                         flagchart = true;
+                        // delete from selected the one that is already recognized on this context.
+                        BarChart barchart = new BarChart(temp.Item1[0], temp.Item1[1]);
+                        barchart.type = "BarChart";
+                        graphs.Add(barchart);
                     }
                     else if (result.Item2 == "+" && flagchart)
                     {

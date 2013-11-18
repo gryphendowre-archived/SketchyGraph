@@ -93,9 +93,8 @@
     </Compile>
     <Compile Include="GraphClasses\BaseGraph.cs" />
     <Compile Include="GraphClasses\Charts\BarChart.cs" />
-    <Compile Include="GraphClasses\Charts\ChartClass.cs" />
+    <Compile Include="GraphClasses\Charts\AxisPlot.cs" />
     <Compile Include="GraphClasses\Charts\PieChart.cs" />
-    <Compile Include="GraphClasses\Graphs\GraphClass.cs" />
     <Compile Include="GraphClasses\Graphs\XYPlot.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>

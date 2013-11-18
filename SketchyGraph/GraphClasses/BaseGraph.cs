@@ -2,15 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Windows;
 
 namespace SketchyGraph
 {
-    class BaseGraph
+    public abstract class BaseGraph
     {
         public int maxRange;
         public int minRange = 0;
         public int maxDomain;
         public int minDomain = 0;
+        public string type;
 
         public List<Object> elements = null;
 
@@ -18,5 +20,7 @@ namespace SketchyGraph
         {
             elements.Add(element);
         }
+
+        public abstract Rect GetBoundingBox();
     }
 }

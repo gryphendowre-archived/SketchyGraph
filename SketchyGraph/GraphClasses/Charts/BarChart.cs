@@ -3,15 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace SketchyGraph.GraphClasses.Charts
+using System.Windows.Ink;
+
+namespace SketchyGraph
 {
-    class BarChart : ChartClass
+    class BarChart : AxisPlot
     {
 
-        public BarChart(int maxRange, int minRange)
+        public BarChart(Stroke x_axis, Stroke y_axis)
         {
-            this.maxRange = maxRange;
-            this.minRange = minRange;
+            this.x = x_axis;
+            this.y = y_axis;
         }
 
         public BarChart(int maxRange)
@@ -26,5 +28,7 @@ namespace SketchyGraph.GraphClasses.Charts
                 this.addElement(obj);
             }
         }
+
+        
     }
 }

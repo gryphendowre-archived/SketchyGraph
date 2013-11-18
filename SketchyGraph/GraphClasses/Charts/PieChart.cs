@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Windows;
 
 namespace SketchyGraph.GraphClasses.Charts
 {
-    class PieChart : ChartClass
+    class PieChart : AxisPlot
     {
 
         public PieChart()
@@ -18,6 +19,12 @@ namespace SketchyGraph.GraphClasses.Charts
             {
                 this.addElement(obj);
             }
+        }
+
+        public override Rect GetBoundingBox()
+        {
+            Rect r = new Rect();
+            return r;
         }
 
     }
