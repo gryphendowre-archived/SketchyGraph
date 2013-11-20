@@ -13,9 +13,9 @@ namespace SketchyGraph
         {
         }
 
-        public void addSlices(List<Object> slices)
+        public void addSlices(List<Element> slices)
         {
-            foreach (Object obj in slices)
+            foreach (Element obj in slices)
             {
                 this.addElement(obj);
             }

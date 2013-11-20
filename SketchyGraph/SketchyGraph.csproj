@@ -75,6 +75,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="GraphClasses\Element.cs" />
+    <Compile Include="GraphClasses\Value.cs" />
     <Compile Include="Recognizer\Circle.cs" />
     <Compile Include="Recognizer\Gesture.cs" />
     <Compile Include="Recognizer\Recognizer.cs" />

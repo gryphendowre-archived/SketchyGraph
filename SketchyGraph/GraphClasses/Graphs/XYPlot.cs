@@ -22,14 +22,6 @@ namespace SketchyGraph
             this.maxRange = yMax;
         }
 
-        //Should we keep this? Or should we just have Points in the BaseGraph class?
-        public void AddPoints(List<Point> points)
-        {
-            foreach (Point pt in points)
-            {
-                Object x = (Object)pt;
-                this.addElement(x);
-            }
-        }
+        
     }
 }

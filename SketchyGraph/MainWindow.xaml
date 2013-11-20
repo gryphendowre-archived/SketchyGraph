@@ -71,5 +71,6 @@
         <InkCanvas x:Name="PaperInk" Grid.Row="2" Background="White" IsManipulationEnabled="True" IsEnabled="True" StrokeCollected="PaperInk_StrokeCollected"> 
         </InkCanvas>
         <TextBox Grid.Row="1" Height="50" HorizontalAlignment="Left" Margin="334,0,0,0" Name="debugtxt" VerticalAlignment="Top" Width="694" />
+        <TextBox Grid.Row="2" Height="52" HorizontalAlignment="Left" Margin="0,531,0,0" Name="msgtxt" VerticalAlignment="Top" Width="1028" />
     </Grid>
 </Window>

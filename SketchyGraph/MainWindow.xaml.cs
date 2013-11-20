@@ -28,6 +28,10 @@ namespace SketchyGraph
         Microsoft.Win32.SaveFileDialog saveDlg = new Microsoft.Win32.SaveFileDialog();
         Microsoft.Win32.OpenFileDialog loadDlg = new Microsoft.Win32.OpenFileDialog();
         List<Stroke> selected = new List<Stroke>();
+        List<Samples> samples_graphs = new List<Samples>();
+        List<Samples> samples_letters = new List<Samples>();
+        List<Samples> samples_numbers = new List<Samples>();
+        List<Samples> samples_symbols = new List<Samples>();
         List<Samples> samples = new List<Samples>();
         List<BaseGraph> graphs = new List<BaseGraph>();
         bool flagchart = false;
@@ -39,7 +43,16 @@ namespace SketchyGraph
             PaperInk.DefaultDrawingAttributes = _regularPen;
             PaperInk.EditingMode = InkCanvasEditingMode.Ink;
             PaperInk.DefaultDrawingAttributes.Color = Colors.Black;
-            this.samples = Utils.ReadFiles(System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "\\samples\\");
+            this.samples_graphs = Utils.ReadFiles(System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "\\samples\\graphs\\");
+            this.samples_letters = Utils.ReadFiles(System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "\\samples\\letters\\");
+            this.samples_numbers = Utils.ReadFiles(System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "\\samples\\numbers\\");
+            this.samples_symbols = Utils.ReadFiles(System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "\\samples\\symbols\\");
+
+            this.samples.AddRange(this.samples_graphs);
+            this.samples.AddRange(this.samples_letters);
+            this.samples.AddRange(this.samples_numbers);
+            this.samples.AddRange(this.samples_symbols);
+
             debugtxt.FontSize = 35;
         }
 
@@ -258,7 +271,7 @@ namespace SketchyGraph
         #endregion
         
 
-        private Tuple<double, string, double> RecognizedSelected(List<Stroke> temp, bool print)
+        private Tuple<double, string, double> RecognizedSelected(List<Stroke> temp, bool print, List<Samples> samples)
         {
             double score = 0.75;
             List<Unistroke> sel = Utils.TransformStrokesToUnistrokes(temp);
@@ -274,7 +287,7 @@ namespace SketchyGraph
                 points.vector = points.CalcStartUnitVector(points.points, points.I);
             }
             DrawSampledPoints(points.points, Colors.Red, 1);
-            Tuple<Unistroke, double, string, double> result = Trazo.Recognize(points, points.vector, sel.Count, this.samples);
+            Tuple<Unistroke, double, string, double> result = Trazo.Recognize(points, points.vector, sel.Count, samples);
             DrawSampledPoints(result.Item1.points, Colors.Blue, 1);
             //textscore.Text = "Score: " + result.Item2.ToString() + "\n" + "Symbol: " + result.Item3.ToString();
             return new Tuple<double, string, double>(result.Item2, result.Item3, score);
@@ -325,19 +338,67 @@ namespace SketchyGraph
             }*/
             else
             {
-                string el;
-                el = RealTimeGestureRecognition(e);
-                
+                bool flag = false;
+
+                if (graphs.Count == 0)
+                {
+                    string el = RealTimeGestureRecognition(e, this.samples);
+                }
+
                 foreach (BaseGraph bgraph in graphs)
                 {
-                    if (bgraph.type == "BarChart")
+                    if (bgraph.type == "BarChart" && !bgraph.hasbeendrawn)
                     {
                         bgraph.CalculateBoundingBoxes(extraspace_chart);
-                        
                         DrawRectangle(((AxisPlot)bgraph).bb, Brushes.Blue);
                         DrawRectangle(((AxisPlot)bgraph).x_bounds, Brushes.Red);
                         DrawRectangle(((AxisPlot)bgraph).y_bounds, Brushes.Black);
                         DrawRectangle(((AxisPlot)bgraph).plot_bound, Brushes.DarkOrange);
+                        bgraph.hasbeendrawn = true;
+                    }
+                    else if (bgraph.type == "BarChart" && bgraph.hasbeendrawn) {
+                        string area = ((BarChart)bgraph).GiveMeAreaChart(e.Stroke.GetBounds());
+                        if (area == "x_bounds") {
+                            List<Samples> x_samples = new List<Samples>();
+                            x_samples.AddRange(this.samples_letters);
+                            x_samples.AddRange(this.samples_numbers);
+                            string el = RealTimeGestureRecognition(e, x_samples);
+                            //if(There is not a value with an element already created if not create the element)
+                            //else{
+                            Element elem = new Element();
+                            Value v = new Value(el, new Unistroke(Utils.TransformStrokeToListPoints(e.Stroke)));
+                            elem.domain_val = v;
+                            bgraph.addElement(elem);
+                            //}
+                        }
+                        else if (area == "y_bounds") {
+                            string el = RealTimeGestureRecognition(e, this.samples_numbers);
+                        }
+                        else if (area == "plot_bound")
+                        {
+                            string el = RealTimeGestureRecognition(e, this.samples_symbols);
+                            //if(el == "bar")
+                        }
+                        else {
+                            flag = true;
+                        }
+                    }
+                }
+                if (flag)
+                {
+                    string el = RealTimeGestureRecognition(e, this.samples);
+                    /*didactic purposes ---- erase later -----*/
+                    foreach (BaseGraph bgraph in graphs)
+                    {
+                        if (bgraph.type == "BarChart" && !bgraph.hasbeendrawn)
+                        {
+                            bgraph.CalculateBoundingBoxes(extraspace_chart);
+                            DrawRectangle(((AxisPlot)bgraph).bb, Brushes.Blue);
+                            DrawRectangle(((AxisPlot)bgraph).x_bounds, Brushes.Red);
+                            DrawRectangle(((AxisPlot)bgraph).y_bounds, Brushes.Black);
+                            DrawRectangle(((AxisPlot)bgraph).plot_bound, Brushes.DarkOrange);
+                            bgraph.hasbeendrawn = true;
+                        }
                     }
                 }
                 //debugtxt.Text = selected.Count.ToString();
@@ -357,7 +418,7 @@ namespace SketchyGraph
             InkCanvas.SetTop(rect, r.Top);
         }
 
-        public string RealTimeGestureRecognition(InkCanvasStrokeCollectedEventArgs e)
+        public string RealTimeGestureRecognition(InkCanvasStrokeCollectedEventArgs e, List<Samples> samples)
         {
             string val = "";
             double thres = 10.0;
@@ -372,7 +433,7 @@ namespace SketchyGraph
 
             if (selected.Count == 1)
             {
-                Tuple<double, string, double> result = RecognizedSelected(selected, true);
+                Tuple<double, string, double> result = RecognizedSelected(selected, true, samples);
 
                 if (result.Item1 > 0.75)
                 {
@@ -420,7 +481,7 @@ namespace SketchyGraph
                 Stroke first = selected[0];
                 selected.RemoveAt(0);
                 Tuple<List<Stroke>, List<int>> temp = Utils.RobustIntersection(first, selected);
-                Tuple<double, string, double> result = RecognizedSelected(temp.Item1, true);
+                Tuple<double, string, double> result = RecognizedSelected(temp.Item1, true, samples);
 
                 if (result.Item1 > 0.75)
                 {
@@ -441,16 +502,6 @@ namespace SketchyGraph
                         BarChart barchart = new BarChart(temp.Item1[1], temp.Item1[0]);
                         barchart.type = "BarChart";
                         graphs.Add(barchart);
-                    }
-                    else if (result.Item2 == "+" && flagchart)
-                    {
-                        flagchart = false;
-                        foreach(UIElement el in PaperInk.Children){
-                            if (el is TextBox) {
-                                TextBox l = (TextBox)el;
-                                l.Text = "GraphXY";
-                            }
-                        }
                     }
                     else
                     {

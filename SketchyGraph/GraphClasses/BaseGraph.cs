@@ -14,10 +14,11 @@ namespace SketchyGraph
         public int minDomain = 0;
         public string type;
         public bool hasbeenmodified = false;
+        public bool hasbeendrawn = false;
 
-        public List<Object> elements = null;
+        public List<Element> elements = null;
 
-        public void addElement(Object element)
+        public void addElement(Element element)
         {
             elements.Add(element);
         }

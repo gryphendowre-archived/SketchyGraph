@@ -5,7 +5,7 @@ using System.Text;
 
 namespace SketchyGraph
 {
-    class Samples
+    public class Samples
     {
         public string name = "";
     	public List<List<Unistroke>> samples = new List<List<Unistroke>>();

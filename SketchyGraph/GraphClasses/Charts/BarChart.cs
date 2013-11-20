@@ -37,15 +37,7 @@ namespace SketchyGraph
         {
             this.maxRange = maxRange;
         }
-
-        public void AddBars(List<Object> bars)
-        {
-            foreach(Object obj in bars)
-            {
-                this.addElement(obj);
-            }
-        }
-
+        
         
     }
 }
