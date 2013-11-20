@@ -400,12 +400,13 @@ namespace SketchyGraph
                             DrawRectangle(((AxisPlot)bgraph).plot_bound, Brushes.DarkOrange);
                             bgraph.hasbeendrawn = true;
                         }
+                        else if (bgraph.type == "PieChart")
+                        {
+                            //Circle circ = ((PieChart)bgraph).GetCircleArea();
+                            DrawCircle(((PieChart)bgraph).GetCircleArea(), Brushes.Blue);
+                        }
                     }
-                    if (bgraph.type == "PieChart")
-                    {
-                        //Circle circ = ((PieChart)bgraph).GetCircleArea();
-                        DrawCircle(((PieChart)bgraph).GetCircleArea(), Brushes.Blue);
-                    }
+                    
                 }
                 //debugtxt.Text = selected.Count.ToString();
                 //tree = new Node<string>(el);
