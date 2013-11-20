@@ -130,6 +130,7 @@ namespace SketchyGraph
                 this.filename = null;
                 PaperInk.Strokes.Clear();
                 PaperInk.Children.Clear();
+                graphs.Clear();
             }
             else if (sender.Equals(menuSaveAs))
             {
