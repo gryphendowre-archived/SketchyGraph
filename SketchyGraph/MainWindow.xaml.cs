@@ -14,6 +14,7 @@ using System.Windows.Shapes;
 using System.Windows.Ink;
 using System.IO;
 using System.Reflection;
+using SketchyGraph.GraphClasses.Charts;
 
 
 namespace SketchyGraph
@@ -129,6 +130,7 @@ namespace SketchyGraph
                 this.filename = null;
                 PaperInk.Strokes.Clear();
                 PaperInk.Children.Clear();
+                graphs.Clear();
             }
             else if (sender.Equals(menuSaveAs))
             {
@@ -413,6 +415,16 @@ namespace SketchyGraph
                             flag = true;
                         }
                     }
+                    else if (bgraph.type == "PieChart" && !bgraph.hasbeendrawn)
+                    {
+                        //Circle circ = ((PieChart)bgraph).GetCircleArea();
+                        DrawCircle(((PieChart)bgraph).GetCircleArea(), Brushes.Blue);
+                        bgraph.hasbeendrawn = true;
+                    }
+                    else if (bgraph.type == "PieChart" && bgraph.hasbeendrawn)
+                    {
+                        flag = true;
+                    }
                 }
                 if (flag)
                 {
@@ -429,7 +441,13 @@ namespace SketchyGraph
                             DrawRectangle(((AxisPlot)bgraph).plot_bound, Brushes.DarkOrange);
                             bgraph.hasbeendrawn = true;
                         }
+                        else if (bgraph.type == "PieChart")
+                        {
+                            //Circle circ = ((PieChart)bgraph).GetCircleArea();
+                            DrawCircle(((PieChart)bgraph).GetCircleArea(), Brushes.Blue);
+                        }
                     }
+                    
                 }
                 //debugtxt.Text = selected.Count.ToString();
                 //tree = new Node<string>(el);
@@ -446,6 +464,17 @@ namespace SketchyGraph
             PaperInk.Children.Add(rect);
             InkCanvas.SetLeft(rect, r.Left);
             InkCanvas.SetTop(rect, r.Top);
+        }
+        public void DrawCircle(Circle c, Brush brush)
+        {
+            Ellipse ellip = new Ellipse();
+            ellip.Width = (c.Radius)*2.0;
+            ellip.Height = (c.Radius) * 2.0;
+            ellip.Stroke = brush;
+            ellip.StrokeThickness = 2;
+            PaperInk.Children.Add(ellip);
+            InkCanvas.SetLeft(ellip, (c.Center.X - c.Radius));
+            InkCanvas.SetTop(ellip, (c.Center.Y - c.Radius));
         }
 
         public string RealTimeGestureRecognition(InkCanvasStrokeCollectedEventArgs e, List<Samples> samples)
@@ -469,30 +498,14 @@ namespace SketchyGraph
                 {
                     if (result.Item2 == "piechart")
                     {
-                        Rect r = e.Stroke.GetBounds();
-                        TextBox t = new TextBox();
-                        t.FontSize = 15;
-                        t.Width = 200;
-                        t.Height = 40;
-                        t.Text = result.Item2;
-                        t.Visibility = Visibility.Visible;
-                        InkCanvas.SetLeft(t, r.Left + 100);
-                        InkCanvas.SetTop(t, r.Top + r.Height + 50);
-                        PaperInk.Children.Add(t);
+                        FeedbackTextbox(e, result);
+                        PieChart piechart = new PieChart(e.Stroke);
+                        piechart.type = "PieChart";
+                        graphs.Add(piechart);
                     }
                     else if (result.Item2 == "barchart")
                     {
-                        Rect r = e.Stroke.GetBounds();
-                        TextBox t = new TextBox();
-                        t.FontSize = 15;
-                        t.Width = 200;
-                        t.Height = 40;
-                        t.Text = result.Item2;
-                        t.Visibility = Visibility.Visible;
-                        InkCanvas.SetLeft(t, r.Left + 100);
-                        InkCanvas.SetTop(t, r.Top + 100);
-                        PaperInk.Children.Add(t);
-                        flagchart = true;
+                        FeedbackTextbox(e, result);
                         // delete from selected the one that is already recognized on this context.
                         BarChart barchart = new BarChart(e.Stroke);
                         barchart.type = "BarChart";
@@ -517,17 +530,7 @@ namespace SketchyGraph
                 {
                     if (result.Item2 == "barchart")
                     {
-                        Rect r = e.Stroke.GetBounds();
-                        TextBox t = new TextBox();
-                        t.FontSize = 15;
-                        t.Width = 200;
-                        t.Height = 40;
-                        t.Text = result.Item2;
-                        t.Visibility = Visibility.Visible;
-                        InkCanvas.SetLeft(t, r.Left + 100);
-                        InkCanvas.SetTop(t, r.Top + 100);
-                        PaperInk.Children.Add(t);
-                        flagchart = true;
+                        FeedbackTextbox(e, result);
                         // delete from selected the one that is already recognized on this context.
                         BarChart barchart = new BarChart(temp.Item1[1], temp.Item1[0]);
                         barchart.type = "BarChart";
@@ -553,7 +556,23 @@ namespace SketchyGraph
             return val;
         }
 
-        
+        /**
+        *  Create the Textbox stating the chart type; Helper Method.
+        */
+        public void FeedbackTextbox(InkCanvasStrokeCollectedEventArgs e, Tuple<double, string, double> result)
+        {
+            Rect r = e.Stroke.GetBounds();
+            TextBox t = new TextBox();
+            t.FontSize = 15;
+            t.Width = 200;
+            t.Height = 40;
+            t.Text = result.Item2;
+            t.Visibility = Visibility.Visible;
+            InkCanvas.SetLeft(t, r.Left + 100);
+            InkCanvas.SetTop(t, r.Top + 100);
+            PaperInk.Children.Add(t);
+            flagchart = true;
+        }
 
         public void DrawSampledPoints(List<Point> resampled, Color c, int i)
         {
