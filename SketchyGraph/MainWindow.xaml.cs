@@ -384,6 +384,16 @@ namespace SketchyGraph
                             flag = true;
                         }
                     }
+                    else if (bgraph.type == "PieChart" && !bgraph.hasbeendrawn)
+                    {
+                        //Circle circ = ((PieChart)bgraph).GetCircleArea();
+                        DrawCircle(((PieChart)bgraph).GetCircleArea(), Brushes.Blue);
+                        bgraph.hasbeendrawn = true;
+                    }
+                    else if (bgraph.type == "PieChart" && bgraph.hasbeendrawn)
+                    {
+                        flag = true;
+                    }
                 }
                 if (flag)
                 {
