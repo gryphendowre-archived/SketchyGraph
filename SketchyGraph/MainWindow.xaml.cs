@@ -114,6 +114,7 @@ namespace SketchyGraph
                 PaperInk.DefaultDrawingAttributes = _regularPen;
                 PaperInk.EditingMode = InkCanvasEditingMode.Ink;
                 PaperInk.DefaultDrawingAttributes.Color = Colors.Black;
+                double x = 0;
 
                 if (sender.Equals(NewFileTB) || sender.Equals(menuNewBlank))
                 {
