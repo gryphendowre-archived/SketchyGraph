@@ -16,7 +16,7 @@ namespace SketchyGraph
         public bool hasbeenmodified = false;
         public bool hasbeendrawn = false;
 
-        public List<Element> elements = null;
+        public List<Element> elements = new List<Element>();
 
         public void addElement(Element element)
         {

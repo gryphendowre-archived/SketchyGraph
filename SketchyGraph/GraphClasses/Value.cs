@@ -12,11 +12,19 @@ namespace SketchyGraph
         public double y_val;
         public double x_val;
 
+        public Value()
+        {
+        }
+
         public Value(string n, Unistroke str) {
             this.val = n;
             this.stroke_val = str;
-            this.y_val = Unistroke.BoundingBox(stroke_val.points).TopLeft.Y - Unistroke.BoundingBox(stroke_val.points).BottomLeft.Y;
-            this.x_val = Unistroke.BoundingBox(stroke_val.points).TopLeft.X - Unistroke.BoundingBox(stroke_val.points).BottomLeft.X;
+            double a = Unistroke.BoundingBox(stroke_val.points).TopLeft.X;
+            double b = Unistroke.BoundingBox(stroke_val.points).TopRight.X;
+            double c = Unistroke.BoundingBox(stroke_val.points).TopLeft.Y;
+            double d = Unistroke.BoundingBox(stroke_val.points).BottomLeft.Y;
+            this.x_val = a + (b-a)/2;
+            this.y_val = c + (d-c)/2;
     	}
 
     }

@@ -363,21 +363,51 @@ namespace SketchyGraph
                             x_samples.AddRange(this.samples_letters);
                             x_samples.AddRange(this.samples_numbers);
                             string el = RealTimeGestureRecognition(e, x_samples);
-                            //if(There is not a value with an element already created if not create the element)
-                            //else{
-                            Element elem = new Element();
-                            Value v = new Value(el, new Unistroke(Utils.TransformStrokeToListPoints(e.Stroke)));
-                            elem.domain_val = v;
-                            bgraph.addElement(elem);
-                            //}
+                            bool valmodified = false;
+                            
+                            foreach(Element element in bgraph.elements){
+                                double a = e.Stroke.GetBounds().TopLeft.X + ((e.Stroke.GetBounds().TopRight.X - e.Stroke.GetBounds().TopLeft.X)/2);
+                                if (a > (element.domain_val.x_val - 15.0) && a < (element.domain_val.x_val + 15.0)) {
+                                    element.domain_val.val = el;
+                                    element.domain_val.stroke_val = new Unistroke(Utils.TransformStrokeToListPoints(e.Stroke));
+                                    valmodified = true;
+                                }
+                            }
+                            if (!valmodified)
+                            {
+                                Element elem = new Element();
+                                Value v = new Value(el, new Unistroke(Utils.TransformStrokeToListPoints(e.Stroke)));
+                                Value w = new Value();
+                                elem.domain_val = v;
+                                elem.range_val = w;
+                                bgraph.addElement(elem);
+                            }
+                            
                         }
                         else if (area == "y_bounds") {
                             string el = RealTimeGestureRecognition(e, this.samples_numbers);
+                            bgraph.maxRange = Convert.ToInt32(el);
                         }
                         else if (area == "plot_bound")
                         {
+                            int max = bgraph.maxRange;
                             string el = RealTimeGestureRecognition(e, this.samples_symbols);
-                            //if(el == "bar")
+                            if (el == "bar") {
+                                double y_max = ((AxisPlot)bgraph).y.GetBounds().TopLeft.Y;
+                                double y_min = ((AxisPlot)bgraph).y.GetBounds().BottomLeft.Y;
+                                double y_e = e.Stroke.GetBounds().TopLeft.Y;
+                                double val = ((y_e - y_min) / (y_max - y_min)) * max;
+
+                                foreach (Element element in bgraph.elements)
+                                {
+                                    double a = e.Stroke.GetBounds().TopLeft.X + ((e.Stroke.GetBounds().TopRight.X - e.Stroke.GetBounds().TopLeft.X) / 2);
+                                    if (a > (element.domain_val.x_val - 15.0) && a < (element.domain_val.x_val + 15.0))
+                                    {
+                                        element.plot = new Unistroke(Utils.TransformStrokeToListPoints(e.Stroke));
+                                        element.range_val.val = Convert.ToString(val);
+                                    }
+                                }
+                            }
                         }
                         else {
                             flag = true;

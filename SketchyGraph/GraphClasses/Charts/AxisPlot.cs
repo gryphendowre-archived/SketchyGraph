@@ -9,8 +9,8 @@ namespace SketchyGraph
 {
     class AxisPlot : BaseGraph
     {
-        protected Stroke x;
-        protected Stroke y;
+        public Stroke x;
+        public Stroke y;
         public Rect bb;
         public Rect x_bounds;
         public Rect y_bounds;
