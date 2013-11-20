@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Windows;
 
-namespace SketchyGraph.GraphClasses.Charts
+namespace SketchyGraph
 {
-    class PieChart : AxisPlot
+    class PieChart : BaseGraph
     {
 
         public PieChart()
@@ -21,10 +21,9 @@ namespace SketchyGraph.GraphClasses.Charts
             }
         }
 
-        public override Rect GetBoundingBox()
+        public override void CalculateBoundingBoxes(double threshold)
         {
             Rect r = new Rect();
-            return r;
         }
 
     }

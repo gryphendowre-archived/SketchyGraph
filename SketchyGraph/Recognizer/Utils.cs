@@ -6,6 +6,10 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Shapes;
 using System.Windows.Ink;
+using System.Windows.Media;
+using System.IO;
+using System.Reflection;
+using System.Windows.Input;
 
 namespace SketchyGraph
 {
@@ -135,5 +139,125 @@ namespace SketchyGraph
             }
             return stringpoints;
         }
+
+        public static Tuple<List<Stroke>, List<int>> RobustIntersection(Stroke si, List<Stroke> CS)
+        {
+            List<Stroke> temp = new List<Stroke>();
+            List<int> indexes = new List<int>();
+            temp.Add(si);
+            for (int i = 0; i < CS.Count; i++)
+                if (CircleIntersection(si, CS[i]))
+                {
+                    temp.Add(CS[i]);
+                    indexes.Add(i);
+                }
+            return new Tuple<List<Stroke>, List<int>>(temp, indexes);
+        }
+
+        private static bool CircleIntersection(Stroke s1, Stroke s2)
+        {
+            List<Point> P = TransformStrokeToListPoints(s1);
+            List<Point> Q = TransformStrokeToListPoints(s2);
+            Straw e1 = new Straw(s1);
+            e1.SamplingExperiment();
+            Straw e2 = new Straw(s2);
+            e2.SamplingExperiment();
+            for (int i = 0; i < e1.getPoints().Count; i++)
+                for (int j = 0; j < e2.getPoints().Count; j++)
+                {
+                    //if (i <= j) {
+                    bool val = Intersect(new Circle(e1.getPoints()[i], s1.DrawingAttributes.Width), new Circle(e2.getPoints()[j], s2.DrawingAttributes.Width));
+                    if (val)
+                        return true;
+                }
+            //}
+            return false;
+        }
+
+        private static bool Intersect(Circle c1, Circle c2)
+        {
+            double dist = Utils.Distance(c1.Center, c2.Center);
+            if (dist > (c1.Radius + c2.Radius))
+                return false;
+            else if (dist < Math.Abs(c1.Radius - c2.Radius))
+                return false;
+            else if (dist == 0)
+                return true;
+            else if (dist > ((c1.Radius + c2.Radius) * 0.9) || dist < ((c1.Radius + c2.Radius) * 1.1))
+                return true;
+            else
+                return true;
+        }
+
+        public static PointCollection TransformListToPointCollection(List<Point> points)
+        {
+            PointCollection pcol = new PointCollection(points.Count);
+            for (int i = 0; i < points.Count; i++)
+                pcol.Add(points[i]);
+            return pcol;
+        }
+
+        public static List<Unistroke> TransformStrokesToUnistrokes(List<Stroke> points)
+        {
+            List<Unistroke> pcol = new List<Unistroke>(points.Count);
+            foreach (Stroke e in points)
+                pcol.Add(new Unistroke(TransformStrokeToListPoints(e)));
+            return pcol;
+        }
+
+        public static List<Point> TransformStrokesToPointCollection(List<Stroke> points)
+        {
+            List<Point> pcol = new List<Point>(points.Count);
+            foreach (Stroke e in points)
+                foreach (StylusPoint p in e.StylusPoints)
+                    pcol.Add(new Point(p.X, p.Y));
+            return pcol;
+        }
+
+        public static List<Point> TransformStrokeToListPoints(Stroke e)
+        {
+            List<Point> pcol = new List<Point>(e.StylusPoints.Count);
+            foreach (StylusPoint p in e.StylusPoints)
+                pcol.Add(new Point(p.X, p.Y));
+            return pcol;
+        }
+
+        public static List<Samples> ReadFiles(string folderpath)
+        {
+            List<Samples> samples = new List<Samples>();
+            foreach (string subdirectory in Directory.GetDirectories(folderpath))
+            {
+                string[] name_gest = subdirectory.Split(new Char[] { '\\' });
+                Samples sam = new Samples(name_gest[name_gest.Length - 1]);
+
+                foreach (string file in Directory.EnumerateFiles(subdirectory, "*.ink"))
+                {
+                    FileStream fs = null;
+                    List<Unistroke> gesture;
+                    try
+                    {
+                        fs = new FileStream(file, FileMode.Open, FileAccess.Read);
+                        StrokeCollection strokes = new StrokeCollection(fs);
+                        gesture = new List<Unistroke>(strokes.Count);
+                        foreach (Stroke stroke in strokes)
+                        {
+                            Unistroke unistroke = new Unistroke(stroke.StylusPoints.Count);
+                            foreach (Point p in stroke.StylusPoints)
+                                unistroke.points.Add(p);
+                            gesture.Add(unistroke);
+                        }
+                        sam.samples.Add(gesture);
+                    }
+                    finally
+                    {
+                        if (fs != null)
+                            fs.Close();
+                    }
+                }
+                samples.Add(sam);
+            }
+            return samples;
+        }
+
     }
 }

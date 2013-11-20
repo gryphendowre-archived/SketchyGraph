@@ -12,12 +12,17 @@ namespace SketchyGraph
         protected Stroke x;
         protected Stroke y;
 
-        public override Rect GetBoundingBox() {
-            Rect x_bounds = x.GetBounds();
-            Rect y_bounds = y.GetBounds();
-            double delta_x = x_bounds.Left - y_bounds.Left;
-            Rect r = new Rect((y_bounds.TopLeft.X - delta_x), y_bounds.TopLeft.Y, x_bounds.Width, x_bounds.Height);
-            return r;
+        public Rect bb;
+        public Rect x_bounds;
+        public Rect y_bounds;
+        public Rect plot_bound;
+
+        public override void CalculateBoundingBoxes(double threshold)
+        {
+            this.x_bounds = new Rect(x.GetBounds().TopLeft.X, x.GetBounds().TopLeft.Y, x.GetBounds().Width, x.GetBounds().Height + 2 * threshold);
+            this.y_bounds = new Rect(y.GetBounds().TopLeft.X - 2 * threshold, y.GetBounds().TopLeft.Y, y.GetBounds().Width + 2 * threshold, y.GetBounds().Height);
+            this.plot_bound = new Rect(y_bounds.TopRight.X, y_bounds.TopRight.Y, x_bounds.TopRight.X - y_bounds.TopRight.X, x_bounds.TopRight.Y - y_bounds.TopRight.Y);
+            this.bb = new Rect((this.y_bounds.TopLeft.X - threshold / 2), (this.y_bounds.TopLeft.Y - threshold / 2), (x_bounds.Width + y_bounds.Width + threshold/2), (y_bounds.Height + x_bounds.Height + threshold/2));
         }
 
     }

@@ -13,6 +13,7 @@ namespace SketchyGraph
         public int maxDomain;
         public int minDomain = 0;
         public string type;
+        public bool hasbeenmodified = false;
 
         public List<Object> elements = null;
 
@@ -21,6 +22,6 @@ namespace SketchyGraph
             elements.Add(element);
         }
 
-        public abstract Rect GetBoundingBox();
+        public abstract void CalculateBoundingBoxes(double threshold);
     }
 }
