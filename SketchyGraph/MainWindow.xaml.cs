@@ -388,7 +388,8 @@ namespace SketchyGraph
                         }
                         else if (area == "y_bounds") {
                             string el = RealTimeGestureRecognition(e, this.samples_numbers);
-                            bgraph.maxRange = Convert.ToInt32(el);
+                            if(el != "")
+                                bgraph.maxRange = Convert.ToInt32(el);
                         }
                         else if (area == "plot_bound")
                         {
@@ -586,6 +587,18 @@ namespace SketchyGraph
                 //matrix.Translate(50,50);
                 //news.Transform(matrix, true);
                 //ResultsInk.Strokes.Add(news);
+            }
+        }
+
+        private void calculate_Click(object sender, RoutedEventArgs e)
+        {
+            resultstxt.Text = "";
+            foreach (BaseGraph graph in this.graphs) {
+                resultstxt.Text += graph.type + "\n";
+                foreach (Element el in graph.elements) {
+                    resultstxt.Text += el.domain_val.val + "=" + el.range_val.val + "\n";
+                }
+                resultstxt.Text += "\n";
             }
         }
 

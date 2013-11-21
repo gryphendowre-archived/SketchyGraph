@@ -72,5 +72,7 @@
         </InkCanvas>
         <TextBox Grid.Row="1" Height="50" HorizontalAlignment="Left" Margin="334,0,0,0" Name="debugtxt" VerticalAlignment="Top" Width="694" />
         <TextBox Grid.Row="2" Height="52" HorizontalAlignment="Left" Margin="0,531,0,0" Name="msgtxt" VerticalAlignment="Top" Width="1028" />
+        <TextBlock Grid.Row="2" Height="533" HorizontalAlignment="Left" Margin="880,0,0,0" Name="resultstxt" Text="" VerticalAlignment="Top" Width="148" />
+        <Button Content="calculate" Grid.Row="2" Height="37" HorizontalAlignment="Left" Margin="734,474,0,0" Name="calculate" VerticalAlignment="Top" Width="110" Click="calculate_Click" />
     </Grid>
 </Window>
