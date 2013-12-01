@@ -15,6 +15,7 @@ using System.Windows.Ink;
 using System.IO;
 using System.Reflection;
 using SketchyGraph.GraphClasses.Charts;
+using System.Diagnostics;
 
 
 namespace SketchyGraph
@@ -338,6 +339,19 @@ namespace SketchyGraph
                 }
                 PaperInk.Strokes.RemoveAt(PaperInk.Strokes.Count - 1);
             }*/
+
+            //else if (graphs.Count > 0)
+            //{
+            //    foreach (BaseGraph bgraph in graphs)
+            //    {
+            //        if (bgraph.type == "PieChart" && StrokeNotInPieChart(e.Stroke,((PieChart)bgraph)) == false)
+            //        {
+            //            Debug.WriteLine("Stroke is inside");
+            //            ((PieChart)bgraph).addSlices(e.Stroke);
+            //            Debug.WriteLine("Number of Strokes inside: " + ((PieChart)bgraph).GetSlices().Count);
+            //        }
+            //    }
+            //}
             else
             {
                 bool flag = false;
@@ -358,18 +372,22 @@ namespace SketchyGraph
                         DrawRectangle(((AxisPlot)bgraph).plot_bound, Brushes.DarkOrange);
                         bgraph.hasbeendrawn = true;
                     }
-                    else if (bgraph.type == "BarChart" && bgraph.hasbeendrawn) {
+                    else if (bgraph.type == "BarChart" && bgraph.hasbeendrawn)
+                    {
                         string area = ((BarChart)bgraph).GiveMeAreaChart(e.Stroke.GetBounds());
-                        if (area == "x_bounds") {
+                        if (area == "x_bounds")
+                        {
                             List<Samples> x_samples = new List<Samples>();
                             x_samples.AddRange(this.samples_letters);
                             x_samples.AddRange(this.samples_numbers);
                             string el = RealTimeGestureRecognition(e, x_samples);
                             bool valmodified = false;
-                            
-                            foreach(Element element in bgraph.elements){
-                                double a = e.Stroke.GetBounds().TopLeft.X + ((e.Stroke.GetBounds().TopRight.X - e.Stroke.GetBounds().TopLeft.X)/2);
-                                if (a > (element.domain_val.x_val - 15.0) && a < (element.domain_val.x_val + 15.0)) {
+
+                            foreach (Element element in bgraph.elements)
+                            {
+                                double a = e.Stroke.GetBounds().TopLeft.X + ((e.Stroke.GetBounds().TopRight.X - e.Stroke.GetBounds().TopLeft.X) / 2);
+                                if (a > (element.domain_val.x_val - 15.0) && a < (element.domain_val.x_val + 15.0))
+                                {
                                     element.domain_val.val = el;
                                     element.domain_val.stroke_val = new Unistroke(Utils.TransformStrokeToListPoints(e.Stroke));
                                     valmodified = true;
@@ -384,18 +402,20 @@ namespace SketchyGraph
                                 elem.range_val = w;
                                 bgraph.addElement(elem);
                             }
-                            
+
                         }
-                        else if (area == "y_bounds") {
+                        else if (area == "y_bounds")
+                        {
                             string el = RealTimeGestureRecognition(e, this.samples_numbers);
-                            if(el != "")
+                            if (el != "")
                                 bgraph.maxRange = Convert.ToInt32(el);
                         }
                         else if (area == "plot_bound")
                         {
                             int max = bgraph.maxRange;
                             string el = RealTimeGestureRecognition(e, this.samples_symbols);
-                            if (el == "bar") {
+                            if (el == "bar")
+                            {
                                 double y_max = ((AxisPlot)bgraph).y.GetBounds().TopLeft.Y;
                                 double y_min = ((AxisPlot)bgraph).y.GetBounds().BottomLeft.Y;
                                 double y_e = e.Stroke.GetBounds().TopLeft.Y;
@@ -412,19 +432,30 @@ namespace SketchyGraph
                                 }
                             }
                         }
-                        else {
+                        else
+                        {
                             flag = true;
                         }
                     }
                     else if (bgraph.type == "PieChart" && !bgraph.hasbeendrawn)
                     {
                         //Circle circ = ((PieChart)bgraph).GetCircleArea();
-                        DrawCircle(((PieChart)bgraph).GetCircleArea(), Brushes.Blue);
+
+                        DrawCircle(((PieChart)bgraph).GetCircleArea(), Brushes.Black);
+                        PaperInk.Strokes.Remove(e.Stroke);
+
                         bgraph.hasbeendrawn = true;
+
                     }
                     else if (bgraph.type == "PieChart" && bgraph.hasbeendrawn)
                     {
                         flag = true;
+                    }
+                    else if (bgraph.type == "PieChart" && StrokeNotInPieChart(e.Stroke, ((PieChart)bgraph)) == false)
+                    {
+                        Debug.WriteLine("Stroke is inside");
+                        ((PieChart)bgraph).addSlices(e.Stroke);
+                        Debug.WriteLine("Number of Strokes inside: " + ((PieChart)bgraph).GetSlices().Count);
                     }
                 }
                 if (flag)
@@ -442,17 +473,49 @@ namespace SketchyGraph
                             DrawRectangle(((AxisPlot)bgraph).plot_bound, Brushes.DarkOrange);
                             bgraph.hasbeendrawn = true;
                         }
-                        else if (bgraph.type == "PieChart")
+                        else if (bgraph.type == "PieChart" &&!bgraph.hasbeendrawn)
                         {
                             //Circle circ = ((PieChart)bgraph).GetCircleArea();
-                            DrawCircle(((PieChart)bgraph).GetCircleArea(), Brushes.Blue);
+                            DrawCircle(((PieChart)bgraph).GetCircleArea(), Brushes.Black);
+                            PaperInk.Strokes.Remove(e.Stroke);
+                            bgraph.hasbeendrawn = true;
+                        }
+                        else if (bgraph.type == "PieChart" && bgraph.hasbeendrawn && StrokeNotInPieChart(e.Stroke, ((PieChart)bgraph)) == false)
+                        {
+                            Debug.WriteLine("Stroke is inside");
+                            ((PieChart)bgraph).addSlices(e.Stroke);
+                            Debug.WriteLine("Number of Strokes inside: " + ((PieChart)bgraph).GetSlices().Count);
                         }
                     }
-                    
+
                 }
                 //debugtxt.Text = selected.Count.ToString();
                 //tree = new Node<string>(el);
             }
+        }
+
+        //Helper method for determining if a stroke is within a Pie Chart's region
+        public bool StrokeNotInPieChart(Stroke e, PieChart chart)
+        {
+            //List<Point> pts = new List<Point>();
+            bool isOutside = false;
+            StylusPointCollection spc = new StylusPointCollection(e.StylusPoints);
+            Point[] arg = (Point[])spc;
+
+            Circle area = chart.GetCircleArea();
+            double val = 0;
+            foreach (Point pt in arg)
+            {
+                val = chart.EuclideanDistance(pt, area.Center);
+                if (val > area.Radius)
+                {
+                    isOutside = true;
+                    Debug.WriteLine("Stroke Outside");
+                    break;
+                }
+            }
+            
+            return isOutside;
         }
 
         public void DrawRectangle(Rect r, Brush brush)
@@ -472,7 +535,7 @@ namespace SketchyGraph
             ellip.Width = (c.Radius)*2.0;
             ellip.Height = (c.Radius) * 2.0;
             ellip.Stroke = brush;
-            ellip.StrokeThickness = 2;
+            ellip.StrokeThickness = 3;
             PaperInk.Children.Add(ellip);
             InkCanvas.SetLeft(ellip, (c.Center.X - c.Radius));
             InkCanvas.SetTop(ellip, (c.Center.Y - c.Radius));
@@ -550,8 +613,10 @@ namespace SketchyGraph
                     selected.Insert(0, first);
                 else
                     if (selected.Count == temp.Item2.Count)
-                        foreach (int j in temp.Item2)
+                        for (int j = temp.Item2.Count - 1; j >= 0; j--)
                             selected.RemoveAt(j);
+                        //foreach (int j in temp.Item2)
+                        //    selected.RemoveAt(j);
                 val = result.Item2;
             }
             return val;

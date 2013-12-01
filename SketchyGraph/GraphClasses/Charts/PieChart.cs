@@ -7,10 +7,11 @@ using System.Windows.Ink;
 
 namespace SketchyGraph.GraphClasses.Charts
 {
-    class PieChart : BaseGraph
+    public class PieChart : BaseGraph
     {
 
         protected Stroke circumference;
+        protected List<Stroke> slices;
         protected List<Point> circumPoints;
         protected Rect boundingBox;
         protected Point centerPoint;
@@ -20,6 +21,7 @@ namespace SketchyGraph.GraphClasses.Charts
         public PieChart(Stroke circumference)
         {
             this.circumference = circumference;
+            this.slices = new List<Stroke>();
             this.boundingBox = GetBoundingBox();
             this.centerPoint = FindCenter(this.boundingBox);
             this.area = CalculateCircleArea(this.boundingBox, this.centerPoint);
@@ -32,6 +34,11 @@ namespace SketchyGraph.GraphClasses.Charts
             {
                 this.addElement(obj);
             }
+        }
+
+        public void addSlices(Stroke slice)
+        {
+            slices.Add(slice);
         }
 
         public Rect GetBoundingBox()
@@ -60,8 +67,10 @@ namespace SketchyGraph.GraphClasses.Charts
             double r3 = EuclideanDistance(bottom, center);
             double r4 = EuclideanDistance(left, center);
             double rTot = (r1 + r2 + r3 + r4) / 4.0;
-            
-            Circle temp = new Circle(center, rTot);
+
+            double rNew = rTot * 1.1;
+
+            Circle temp = new Circle(center, rNew);
             return temp;
         }
 
@@ -78,6 +87,10 @@ namespace SketchyGraph.GraphClasses.Charts
         public Circle GetCircleArea()
         {
             return this.area;
+        }
+        public List<Stroke> GetSlices()
+        {
+            return this.slices;
         }
     }
 }
