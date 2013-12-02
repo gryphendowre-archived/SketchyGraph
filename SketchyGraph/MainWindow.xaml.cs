@@ -494,11 +494,19 @@ namespace SketchyGraph
             }
         }
 
-        //Helper method for determining if a stroke is within a Pie Chart's region
+        /**
+         * Helper method for determining if a stroke is within a Pie Chart's region
+         */ 
         public bool StrokeNotInPieChart(Stroke e, PieChart chart)
         {
             //List<Point> pts = new List<Point>();
             bool isOutside = false;
+            double varianceStart = 0.90;
+            double varianceEnd = 0.10;
+            double startRatio = 0.0;
+            double endRatio = 0.0;
+            double startPoint = 0.0;
+            double endPoint = 0.0;
             StylusPointCollection spc = new StylusPointCollection(e.StylusPoints);
             Point[] arg = (Point[])spc;
 
@@ -514,10 +522,80 @@ namespace SketchyGraph
                     break;
                 }
             }
+
+            startPoint = chart.EuclideanDistance(arg[0], area.Center);
+            endPoint = chart.EuclideanDistance(arg[arg.Count()-1], area.Center);
             
+            if (startPoint >= area.Radius)
+            {
+                startRatio = area.Radius / startPoint;
+            }
+            else
+            {
+                startRatio = startPoint / area.Radius;
+            }
+            
+            if (endPoint >= area.Radius)
+            {
+                endRatio = area.Radius / endPoint;
+            }
+            else
+            {
+                endRatio = endPoint / area.Radius;
+            }
+
+            isMultipleSlice(arg, chart, area.Radius);
+
+            if (startRatio < varianceStart || endRatio > varianceEnd)
+            {
+                isOutside = true;
+            }
+
+            if (isOutside == true)
+            {
+                PaperInk.Strokes.Remove(e);
+            }
+
             return isOutside;
         }
 
+        /*
+         * Helper method to determine if a user directly creates one slice, instead of a straight line in the PieChart
+         */ 
+        public bool isMultipleSlice(Point[] pts, PieChart chart, double radius)
+        {
+            bool returnVal = false;
+            double totalDist = 0.0;
+            double variance = 0.90;
+            double doubRad = 2*radius;
+            double ratio = 0.0;
+            for (int i = 0; i < pts.Count()-1; i++)
+            {
+                totalDist = totalDist + chart.EuclideanDistance(pts[i], pts[i + 1]);
+            }
+
+            if (doubRad > totalDist)
+            {
+                ratio = totalDist/doubRad;
+            }
+            else
+            {
+                ratio = doubRad/totalDist;
+            }
+
+            if (ratio > variance)
+            {
+                Debug.WriteLine("Multiple Slice");
+                returnVal = true;
+            }
+
+
+            return returnVal;
+        }
+
+        /*
+         * Method used to draw the rectangles representing the information boxes of a bar/point graph.
+         */ 
         public void DrawRectangle(Rect r, Brush brush)
         {
             Rectangle rect = new Rectangle();
@@ -529,6 +607,9 @@ namespace SketchyGraph
             InkCanvas.SetLeft(rect, r.Left);
             InkCanvas.SetTop(rect, r.Top);
         }
+        /**
+         *  Method that replaces the poor graph drawn by the user with a nicer, cleaner Circle.
+         */ 
         public void DrawCircle(Circle c, Brush brush)
         {
             Ellipse ellip = new Ellipse();
@@ -541,6 +622,9 @@ namespace SketchyGraph
             InkCanvas.SetTop(ellip, (c.Center.Y - c.Radius));
         }
 
+        /**
+         * One part of the meat&Cookies of the project, Gesture Recognition for recognizing the Chart type for SketchyGraph
+         */ 
         public string RealTimeGestureRecognition(InkCanvasStrokeCollectedEventArgs e, List<Samples> samples)
         {
             string val = "";
@@ -639,7 +723,10 @@ namespace SketchyGraph
             PaperInk.Children.Add(t);
             flagchart = true;
         }
-
+        
+        /**
+         * Draws Sampled Points for debugging purposes.
+         */
         public void DrawSampledPoints(List<Point> resampled, Color c, int i)
         {
             if (resampled.Count > 0)
@@ -655,6 +742,9 @@ namespace SketchyGraph
             }
         }
 
+        /**
+         *  UIElement method, calculates the bargraph amount based of its relative position to the Y range.
+         */ 
         private void calculate_Click(object sender, RoutedEventArgs e)
         {
             resultstxt.Text = "";
