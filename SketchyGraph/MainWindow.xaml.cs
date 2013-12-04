@@ -340,19 +340,6 @@ namespace SketchyGraph
                 }
                 PaperInk.Strokes.RemoveAt(PaperInk.Strokes.Count - 1);
             }*/
-
-            //else if (graphs.Count > 0)
-            //{
-            //    foreach (BaseGraph bgraph in graphs)
-            //    {
-            //        if (bgraph.type == "PieChart" && StrokeNotInPieChart(e.Stroke,((PieChart)bgraph)) == false)
-            //        {
-            //            Debug.WriteLine("Stroke is inside");
-            //            ((PieChart)bgraph).addSlices(e.Stroke);
-            //            Debug.WriteLine("Number of Strokes inside: " + ((PieChart)bgraph).GetSlices().Count);
-            //        }
-            //    }
-            //}
             else
             {
                 bool flag = false;
@@ -409,26 +396,86 @@ namespace SketchyGraph
                         {
                             string el = RealTimeGestureRecognition(e, this.samples_numbers);
                             if (el != "")
-                                bgraph.maxRange = Convert.ToInt32(el);
+                            {
+                                bgraph.AddRangeValue(new Unistroke(Utils.TransformStrokeToListPoints(e.Stroke), el));
+                                bgraph.maxRange = bgraph.returnMaxRange();
+                            }
                         }
                         else if (area == "plot_bound")
                         {
-                            int max = bgraph.maxRange;
-                            string el = RealTimeGestureRecognition(e, this.samples_symbols);
-                            if (el == "bar")
-                            {
-                                double y_max = ((AxisPlot)bgraph).y.GetBounds().TopLeft.Y;
-                                double y_min = ((AxisPlot)bgraph).y.GetBounds().BottomLeft.Y;
-                                double y_e = e.Stroke.GetBounds().TopLeft.Y;
-                                double val = ((y_e - y_min) / (y_max - y_min)) * max;
 
-                                foreach (Element element in bgraph.elements)
+                            if (e.Stroke.StylusPoints.Count == 1)
+                            {
+                                double width = 1.0;
+                                StylusPointCollection newpoints = new StylusPointCollection();
+                                foreach (Element el in bgraph.elements) { 
+                                    if(el.isInsidePlot(new Point(e.Stroke.StylusPoints[0].X, e.Stroke.StylusPoints[0].Y))){
+                                        Rect bbel = Unistroke.BoundingBox(el.plot.points);
+                                        width = bbel.Width;
+                                        newpoints.Add(new StylusPoint(bbel.Left + (bbel.Width /2), bbel.Top));
+                                        newpoints.Add(new StylusPoint(bbel.Left + (bbel.Width /2), bbel.Bottom));
+                                    }
+                                }
+                                if (newpoints.Count > 0)
                                 {
-                                    double a = e.Stroke.GetBounds().TopLeft.X + ((e.Stroke.GetBounds().TopRight.X - e.Stroke.GetBounds().TopLeft.X) / 2);
-                                    if (a > (element.domain_val.x_val - 15.0) && a < (element.domain_val.x_val + 15.0))
+                                    Stroke str = new Stroke(newpoints);
+                                    str.DrawingAttributes.Color = Colors.Yellow;
+                                    str.DrawingAttributes.Width = width;
+                                    str.DrawingAttributes.IsHighlighter = true;
+                                    PaperInk.Strokes.Add(str);
+                                }
+                                else {
+                                    //XY Plot
+                                }
+                                PaperInk.Strokes.Remove(e.Stroke);
+                            }
+                            else
+                            {
+
+                                double max = bgraph.maxRange;
+                                string el = RealTimeGestureRecognition(e, this.samples_symbols);
+                                if (el == "bar")
+                                {
+                                    double y_e = e.Stroke.GetBounds().Top;
+                                    int index = bgraph.getIndexofRangeValues(y_e);
+                                    double upper = 0.0;
+                                    double lower = 0.0;
+                                    double y_max = 0.0;
+                                    double y_min = 0.0;
+                                    double val = 0.0;
+                                    if (index != 0 && index != bgraph.rval.Count)
                                     {
-                                        element.plot = new Unistroke(Utils.TransformStrokeToListPoints(e.Stroke));
-                                        element.range_val.val = Convert.ToString(val);
+                                        upper = bgraph.rval[index - 1].getNumericalValue();
+                                        lower = bgraph.rval[index].getNumericalValue();
+                                        y_max = bgraph.rval[index - 1].getBoundingBox().Top;
+                                        y_min = bgraph.rval[index].getBoundingBox().Bottom;
+                                        val = (((y_e - y_min) / (y_max - y_min)) * (upper - lower)) + lower;
+                                    }
+                                    else if (index == bgraph.rval.Count)
+                                    {
+                                        upper = bgraph.rval[bgraph.rval.Count - 1].getNumericalValue();
+                                        lower = 0.0;
+                                        y_max = bgraph.rval[bgraph.rval.Count - 1].getBoundingBox().Top;
+                                        y_min = ((AxisPlot)bgraph).y.GetBounds().BottomLeft.Y;
+                                        val = (((y_e - y_min) / (y_max - y_min)) * (upper - lower)) + lower;
+                                    }
+                                    else
+                                    {
+                                        val = bgraph.maxRange;
+                                    }
+
+                                    double ttt = 5;
+
+
+
+                                    foreach (Element element in bgraph.elements)
+                                    {
+                                        double a = e.Stroke.GetBounds().TopLeft.X + ((e.Stroke.GetBounds().TopRight.X - e.Stroke.GetBounds().TopLeft.X) / 2);
+                                        if (a > (element.domain_val.x_val - 15.0) && a < (element.domain_val.x_val + 15.0))
+                                        {
+                                            element.plot = new Unistroke(Utils.TransformStrokeToListPoints(e.Stroke));
+                                            element.range_val.val = Convert.ToString(val);
+                                        }
                                     }
                                 }
                             }
