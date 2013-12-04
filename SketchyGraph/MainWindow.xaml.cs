@@ -16,6 +16,7 @@ using System.IO;
 using System.Reflection;
 using SketchyGraph.GraphClasses.Charts;
 using System.Diagnostics;
+using SketchyGraph.Util;
 
 
 namespace SketchyGraph
@@ -514,7 +515,8 @@ namespace SketchyGraph
             double val = 0;
             foreach (Point pt in arg)
             {
-                val = chart.EuclideanDistance(pt, area.Center);
+                val = GeneralUtil.EuclideanDistance(pt, area.Center);
+                //val = chart.EuclideanDistance(pt, area.Center);
                 if (val > area.Radius)
                 {
                     isOutside = true;
@@ -523,8 +525,8 @@ namespace SketchyGraph
                 }
             }
 
-            startPoint = chart.EuclideanDistance(arg[0], area.Center);
-            endPoint = chart.EuclideanDistance(arg[arg.Count()-1], area.Center);
+            startPoint = GeneralUtil.EuclideanDistance(arg[0], area.Center);
+            endPoint = GeneralUtil.EuclideanDistance(arg[arg.Count()-1], area.Center);
             
             if (startPoint >= area.Radius)
             {
@@ -571,7 +573,7 @@ namespace SketchyGraph
             double ratio = 0.0;
             for (int i = 0; i < pts.Count()-1; i++)
             {
-                totalDist = totalDist + chart.EuclideanDistance(pts[i], pts[i + 1]);
+                totalDist = totalDist + GeneralUtil.EuclideanDistance(pts[i], pts[i + 1]);
             }
 
             if (doubRad > totalDist)

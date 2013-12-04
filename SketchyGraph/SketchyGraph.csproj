@@ -85,6 +85,8 @@
     <Compile Include="Recognizer\Trazo.cs" />
     <Compile Include="Recognizer\Unistroke.cs" />
     <Compile Include="Recognizer\Utils.cs" />
+    <Compile Include="Util\GeneralUtil.cs" />
+    <Compile Include="Util\PieUtil.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

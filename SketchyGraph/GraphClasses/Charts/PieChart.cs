@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Windows;
 using System.Windows.Ink;
+using SketchyGraph.Util;
 
 namespace SketchyGraph.GraphClasses.Charts
 {
@@ -62,10 +63,10 @@ namespace SketchyGraph.GraphClasses.Charts
             Point bottom = new Point((boundingBox.TopLeft.X + (boundingBox.Width / 2.0)), boundingBox.BottomLeft.Y);
             Point left = new Point(boundingBox.TopLeft.X, (boundingBox.TopLeft.Y + (boundingBox.Height / 2.0)));
             
-            double r1 = EuclideanDistance(top, center);
-            double r2 = EuclideanDistance(right, center);
-            double r3 = EuclideanDistance(bottom, center);
-            double r4 = EuclideanDistance(left, center);
+            double r1 = GeneralUtil.EuclideanDistance(top, center);
+            double r2 = GeneralUtil.EuclideanDistance(right, center);
+            double r3 = GeneralUtil.EuclideanDistance(bottom, center);
+            double r4 = GeneralUtil.EuclideanDistance(left, center);
             double rTot = (r1 + r2 + r3 + r4) / 4.0;
 
             double rNew = rTot * 1.1;
@@ -78,12 +79,6 @@ namespace SketchyGraph.GraphClasses.Charts
         {
         }
 
-        public double EuclideanDistance(Point a, Point b)
-        {
-            double deltX = b.X - a.X;
-            double deltY = b.Y - a.Y;
-            return Math.Sqrt(Math.Pow(deltX, 2.0) + Math.Pow(deltY, 2.0));
-        }
         public Circle GetCircleArea()
         {
             return this.area;
