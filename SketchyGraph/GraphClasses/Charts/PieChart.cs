@@ -87,5 +87,13 @@ namespace SketchyGraph.GraphClasses.Charts
         {
             return this.slices;
         }
+        public Stroke GetCircumference()
+        {
+            return this.circumference;
+        }
+        public Point GetCenterPoint()
+        {
+            return this.centerPoint;
+        }
     }
 }

@@ -443,7 +443,8 @@ namespace SketchyGraph
                         //Circle circ = ((PieChart)bgraph).GetCircleArea();
 
                         DrawCircle(((PieChart)bgraph).GetCircleArea(), Brushes.Black);
-                        PaperInk.Strokes.Remove(e.Stroke);
+                        if (e.Stroke == ((PieChart)bgraph).GetCircumference())
+                            PaperInk.Strokes.Remove(e.Stroke);
 
                         bgraph.hasbeendrawn = true;
 
@@ -478,7 +479,9 @@ namespace SketchyGraph
                         {
                             //Circle circ = ((PieChart)bgraph).GetCircleArea();
                             DrawCircle(((PieChart)bgraph).GetCircleArea(), Brushes.Black);
-                            PaperInk.Strokes.Remove(e.Stroke);
+                            if (e.Stroke == ((PieChart)bgraph).GetCircumference())
+                                PaperInk.Strokes.Remove(e.Stroke);
+                            //PaperInk.Strokes.Remove(e.Stroke);
                             bgraph.hasbeendrawn = true;
                         }
                         else if (bgraph.type == "PieChart" && bgraph.hasbeendrawn && StrokeNotInPieChart(e.Stroke, ((PieChart)bgraph)) == false)
@@ -516,7 +519,6 @@ namespace SketchyGraph
             foreach (Point pt in arg)
             {
                 val = GeneralUtil.EuclideanDistance(pt, area.Center);
-                //val = chart.EuclideanDistance(pt, area.Center);
                 if (val > area.Radius)
                 {
                     isOutside = true;
@@ -525,74 +527,34 @@ namespace SketchyGraph
                 }
             }
 
-            startPoint = GeneralUtil.EuclideanDistance(arg[0], area.Center);
-            endPoint = GeneralUtil.EuclideanDistance(arg[arg.Count()-1], area.Center);
-            
-            if (startPoint >= area.Radius)
+            if (PieUtil.trueSlice(arg, chart, area.Radius))
             {
-                startRatio = area.Radius / startPoint;
+                Debug.WriteLine("Time to add a slice");
+                isOutside = false;
             }
             else
             {
-                startRatio = startPoint / area.Radius;
+                Debug.WriteLine("Check Single Cut");
+                startPoint = GeneralUtil.EuclideanDistance(arg[0], area.Center);
+                endPoint = GeneralUtil.EuclideanDistance(arg[arg.Count() - 1], area.Center);
+                startRatio = PieUtil.FindStartRatio(area.Radius, startPoint);
+                endRatio = PieUtil.FindEndRatio(area.Radius, endPoint);
+                
+                if (startRatio < varianceStart || endRatio > varianceEnd)
+                {
+                    isOutside = true;
+                }
             }
             
-            if (endPoint >= area.Radius)
-            {
-                endRatio = area.Radius / endPoint;
-            }
-            else
-            {
-                endRatio = endPoint / area.Radius;
-            }
-
-            isMultipleSlice(arg, chart, area.Radius);
-
-            if (startRatio < varianceStart || endRatio > varianceEnd)
-            {
-                isOutside = true;
-            }
-
             if (isOutside == true)
             {
-                PaperInk.Strokes.Remove(e);
+                if (PieUtil.IsInsideCheck(arg, chart.GetBoundingBox()))
+                {
+                    PaperInk.Strokes.Remove(e);
+                }
             }
 
             return isOutside;
-        }
-
-        /*
-         * Helper method to determine if a user directly creates one slice, instead of a straight line in the PieChart
-         */ 
-        public bool isMultipleSlice(Point[] pts, PieChart chart, double radius)
-        {
-            bool returnVal = false;
-            double totalDist = 0.0;
-            double variance = 0.90;
-            double doubRad = 2*radius;
-            double ratio = 0.0;
-            for (int i = 0; i < pts.Count()-1; i++)
-            {
-                totalDist = totalDist + GeneralUtil.EuclideanDistance(pts[i], pts[i + 1]);
-            }
-
-            if (doubRad > totalDist)
-            {
-                ratio = totalDist/doubRad;
-            }
-            else
-            {
-                ratio = doubRad/totalDist;
-            }
-
-            if (ratio > variance)
-            {
-                Debug.WriteLine("Multiple Slice");
-                returnVal = true;
-            }
-
-
-            return returnVal;
         }
 
         /*
