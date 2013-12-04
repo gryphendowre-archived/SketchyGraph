@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Windows;
+using System.Windows.Ink;
+using System.Windows.Input;
 
 namespace SketchyGraph
 {
@@ -12,6 +15,13 @@ namespace SketchyGraph
         public Unistroke plot { get; set; }
 
         public Element() {}
+
+        public bool isInsidePlot(Point p){
+            Rect bbplot = Unistroke.BoundingBox(this.plot.points);
+            if ((p.X > bbplot.Left) && (p.X < bbplot.Right) && (p.Y > bbplot.Top) && (p.Y < bbplot.Bottom))
+                return true;
+            return false;
+        }
 
     }
 }

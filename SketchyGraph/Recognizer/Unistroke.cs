@@ -6,10 +6,11 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Shapes;
 using System.Windows.Ink;
+using System.Collections;
 
 namespace SketchyGraph
 {
-    public class Unistroke
+    public class Unistroke : IComparable
     {
         public List<Point> points;
         public List<Point> oldpoints;
@@ -19,6 +20,7 @@ namespace SketchyGraph
         public Point O = new Point(0d, 0d);
         public int I = 12;
         public Vector vector;
+        public string value;
         private static readonly double Phi = 0.5 * (-1 + Math.Sqrt(5)); // Golden Ratio
 
         public Unistroke(){
@@ -31,10 +33,51 @@ namespace SketchyGraph
             this.oldpoints = pointssrc;
         }
 
+        public Unistroke(List<Point> pointssrc, string val)
+        {
+            this.points = pointssrc;
+            this.oldpoints = pointssrc;
+            this.value = val;
+        }
+
         public Unistroke(int size)
         {
             this.points = new List<Point>(size);
             this.oldpoints = new List<Point>(size);
+        }
+
+        // Nested class to do ascending sort on boundingbox property.
+        private class sortStrokeAscendingHelperBB : IComparer
+        {
+            int IComparer.Compare(object a, object b)
+            {
+                Unistroke c1 = (Unistroke)a;
+                Unistroke c2 = (Unistroke)b;
+
+                double x = Unistroke.BoundingBox(c1.points).Left;
+                double y = Unistroke.BoundingBox(c2.points).Left;
+
+                if (x < y)
+                    return 1;
+                if (x > y)
+                    return -1;
+                else
+                    return 0;
+            }
+        }
+
+        // Implement IComparable CompareTo to provide default sort order.
+        int IComparable.CompareTo(object obj)
+        {
+            //Unistroke c = (Unistroke)obj;
+            //return String.Compare(this.make, c.make);
+            return -1;
+        }
+
+        // Method to return IComparer object for sort helper.
+        public static IComparer sortUnistrokeAscending()
+        {
+            return (IComparer)new sortStrokeAscendingHelperBB();
         }
 
         public List<Point> Resample(List<Point> pointssrc, int n)

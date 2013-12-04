@@ -76,6 +76,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="GraphClasses\Element.cs" />
+    <Compile Include="GraphClasses\RangeValue.cs" />
     <Compile Include="GraphClasses\Value.cs" />
     <Compile Include="Recognizer\Circle.cs" />
     <Compile Include="Recognizer\Gesture.cs" />
