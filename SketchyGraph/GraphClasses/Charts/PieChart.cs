@@ -13,6 +13,7 @@ namespace SketchyGraph.GraphClasses.Charts
 
         protected Stroke circumference;
         protected List<Stroke> slices;
+        protected List<UIElement> sliceLines;
         protected List<Point> circumPoints;
         protected Rect boundingBox;
         protected Point centerPoint;
@@ -23,18 +24,16 @@ namespace SketchyGraph.GraphClasses.Charts
         {
             this.circumference = circumference;
             this.slices = new List<Stroke>();
+            this.sliceLines = new List<UIElement>();
             this.boundingBox = GetBoundingBox();
             this.centerPoint = FindCenter(this.boundingBox);
             this.area = CalculateCircleArea(this.boundingBox, this.centerPoint);
             double x = 0;
         }
 
-        public void addSlices(List<Element> slices)
+        public void addSlices(UIElement slice)
         {
-            foreach (Element obj in slices)
-            {
-                this.addElement(obj);
-            }
+            sliceLines.Add(slice);
         }
 
         public void addSlices(Stroke slice)

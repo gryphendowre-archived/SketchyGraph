@@ -38,6 +38,8 @@ namespace SketchyGraph
         List<Samples> samples = new List<Samples>();
         List<BaseGraph> graphs = new List<BaseGraph>();
         bool flagchart = false;
+        bool edgeLast = false;
+        bool multipleSlice = false;
         double extraspace_chart = 30.0;
 
         public MainWindow()
@@ -464,10 +466,6 @@ namespace SketchyGraph
                                         val = bgraph.maxRange;
                                     }
 
-                                    double ttt = 5;
-
-
-
                                     foreach (Element element in bgraph.elements)
                                     {
                                         double a = e.Stroke.GetBounds().TopLeft.X + ((e.Stroke.GetBounds().TopRight.X - e.Stroke.GetBounds().TopLeft.X) / 2);
@@ -503,8 +501,26 @@ namespace SketchyGraph
                     else if (bgraph.type == "PieChart" && StrokeNotInPieChart(e.Stroke, ((PieChart)bgraph)) == false)
                     {
                         Debug.WriteLine("Stroke is inside");
-                        ((PieChart)bgraph).addSlices(e.Stroke);
-                        Debug.WriteLine("Number of Strokes inside: " + ((PieChart)bgraph).GetSlices().Count);
+                        if (multipleSlice == true)
+                        {
+                            Line temp1 = new Line();
+                            Line temp2 = new Line();
+
+                            DrawLine(temp1, bgraph, e.Stroke, true, true);
+                            DrawLine(temp2, bgraph, e.Stroke, true, false);
+                            PaperInk.Strokes.Remove(e.Stroke);
+                            multipleSlice = false;
+                        }
+                        else
+                        {
+                            Line temp = new Line();
+                            DrawLine(temp, bgraph, e.Stroke, false, false);
+                            PaperInk.Strokes.Remove(e.Stroke);
+                            Debug.WriteLine("Stroke is inside");
+                            ((PieChart)bgraph).addSlices(e.Stroke);
+                            Debug.WriteLine("Number of Strokes inside: " + ((PieChart)bgraph).GetSlices().Count);
+                        }
+                        
                     }
                 }
                 if (flag)
@@ -533,9 +549,27 @@ namespace SketchyGraph
                         }
                         else if (bgraph.type == "PieChart" && bgraph.hasbeendrawn && StrokeNotInPieChart(e.Stroke, ((PieChart)bgraph)) == false)
                         {
-                            Debug.WriteLine("Stroke is inside");
-                            ((PieChart)bgraph).addSlices(e.Stroke);
-                            Debug.WriteLine("Number of Strokes inside: " + ((PieChart)bgraph).GetSlices().Count);
+                            //If True, need to create 2 Lines.
+                            if (multipleSlice == true)
+                            {
+                                Line temp1 = new Line();
+                                Line temp2 = new Line();
+
+                                DrawLine(temp1, bgraph, e.Stroke, true, true);
+                                DrawLine(temp2, bgraph, e.Stroke, true, false);
+                                PaperInk.Strokes.Remove(e.Stroke);
+                                multipleSlice = false;
+                            }
+                            else
+                            {
+                                Line temp = new Line();
+                                DrawLine(temp, bgraph, e.Stroke, false, false);
+                                PaperInk.Strokes.Remove(e.Stroke);
+                                Debug.WriteLine("Stroke is inside");
+                                ((PieChart)bgraph).addSlices(e.Stroke);
+                                Debug.WriteLine("Number of Strokes inside: " + ((PieChart)bgraph).GetSlices().Count);
+                            }
+                           
                         }
                     }
 
@@ -578,6 +612,7 @@ namespace SketchyGraph
             {
                 Debug.WriteLine("Time to add a slice");
                 isOutside = false;
+                this.multipleSlice = true;
             }
             else
             {
@@ -586,8 +621,22 @@ namespace SketchyGraph
                 endPoint = GeneralUtil.EuclideanDistance(arg[arg.Count() - 1], area.Center);
                 startRatio = PieUtil.FindStartRatio(area.Radius, startPoint);
                 endRatio = PieUtil.FindEndRatio(area.Radius, endPoint);
-                
-                if (startRatio < varianceStart || endRatio > varianceEnd)
+
+                //Checks whether or not a stroke stretches from the edge to the center point
+                if (startRatio >= varianceStart && endRatio <= varianceEnd)
+                {
+                    isOutside = false;
+                    edgeLast = false;
+                }
+                //Inversely, this checks to see if the strokes was drawn from the center to the edge.
+                else if(startRatio <= varianceEnd && endRatio >= varianceStart)
+                {
+                    isOutside = false;
+                    edgeLast = true;
+                }
+                //If neither of the above statements are true, then it is not an accurate stroke or
+                //
+                else
                 {
                     isOutside = true;
                 }
@@ -604,6 +653,47 @@ namespace SketchyGraph
             return isOutside;
         }
 
+        /*
+         * Method used to draw a Pie Chart line representing the line slice inside a pie chart.
+         */
+        public void DrawLine(Line line, BaseGraph bgraph, Stroke e, bool multiStrokeTrue, bool multiStrokeStart)
+        {
+            int sizeStrokeList = e.StylusPoints.Count;
+            if (multiStrokeTrue && multiStrokeStart)
+            {
+                line.X1 = e.StylusPoints[0].X;
+                line.Y1 = e.StylusPoints[0].Y;
+                line.X2 = ((PieChart)bgraph).GetCenterPoint().X;
+                line.Y2 = ((PieChart)bgraph).GetCenterPoint().Y;
+            }
+            else if (multiStrokeTrue && (multiStrokeStart == false))
+            {
+                line.X2 = e.StylusPoints[sizeStrokeList-1].X;
+                line.Y2 = e.StylusPoints[sizeStrokeList - 1].Y;
+                line.X1 = ((PieChart)bgraph).GetCenterPoint().X;
+                line.Y1 = ((PieChart)bgraph).GetCenterPoint().Y;
+            }
+            else if (edgeLast == true)
+            {
+                line.X1 = ((PieChart)bgraph).GetCenterPoint().X;
+                line.Y1 = ((PieChart)bgraph).GetCenterPoint().Y;
+                line.X2 = e.StylusPoints[sizeStrokeList - 1].X;
+                line.Y2 = e.StylusPoints[sizeStrokeList - 1].Y;
+                edgeLast = false;
+            }
+            else
+            {
+                line.X1 = e.StylusPoints[0].X;
+                line.Y1 = e.StylusPoints[0].Y;
+                line.X2 = ((PieChart)bgraph).GetCenterPoint().X;
+                line.Y2 = ((PieChart)bgraph).GetCenterPoint().Y;
+            }
+
+            ((PieChart)bgraph).addSlices(line);
+            line.Stroke = Brushes.Black;
+            line.StrokeThickness = 3;
+            PaperInk.Children.Add(line);
+        }
         /*
          * Method used to draw the rectangles representing the information boxes of a bar/point graph.
          */ 
