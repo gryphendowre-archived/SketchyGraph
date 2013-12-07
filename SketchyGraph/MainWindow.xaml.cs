@@ -662,17 +662,17 @@ namespace SketchyGraph
             int sizeStrokeList = e.StylusPoints.Count;
             if (multiStrokeTrue && multiStrokeStart)
             {
-                line.X1 = e.StylusPoints[0].X;
-                line.Y1 = e.StylusPoints[0].Y;
-                line.X2 = ((PieChart)bgraph).GetCenterPoint().X;
-                line.Y2 = ((PieChart)bgraph).GetCenterPoint().Y;
+                line.X1 = ((PieChart)bgraph).GetCenterPoint().X;
+                line.Y1 = ((PieChart)bgraph).GetCenterPoint().Y;
+                line.X2 = e.StylusPoints[0].X;
+                line.Y2 = e.StylusPoints[0].Y; 
             }
             else if (multiStrokeTrue && (multiStrokeStart == false))
             {
-                line.X2 = e.StylusPoints[sizeStrokeList-1].X;
-                line.Y2 = e.StylusPoints[sizeStrokeList - 1].Y;
                 line.X1 = ((PieChart)bgraph).GetCenterPoint().X;
                 line.Y1 = ((PieChart)bgraph).GetCenterPoint().Y;
+                line.X2 = e.StylusPoints[sizeStrokeList - 1].X;
+                line.Y2 = e.StylusPoints[sizeStrokeList - 1].Y;
             }
             else if (edgeLast == true)
             {
@@ -684,10 +684,10 @@ namespace SketchyGraph
             }
             else
             {
-                line.X1 = e.StylusPoints[0].X;
-                line.Y1 = e.StylusPoints[0].Y;
-                line.X2 = ((PieChart)bgraph).GetCenterPoint().X;
-                line.Y2 = ((PieChart)bgraph).GetCenterPoint().Y;
+                line.X1 = ((PieChart)bgraph).GetCenterPoint().X;
+                line.Y1 = ((PieChart)bgraph).GetCenterPoint().Y;
+                line.X2 = e.StylusPoints[0].X;
+                line.Y2 = e.StylusPoints[0].Y;
             }
 
             ((PieChart)bgraph).addSlices(line);
