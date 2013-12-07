@@ -17,11 +17,37 @@ namespace SketchyGraph
         public bool hasbeendrawn = false;
         public double thresh = 10.0;
         public List<RangeValue> rval = new List<RangeValue>();
+        public List<RangeValue> rvalsorted = new List<RangeValue>();
         public List<Element> elements = new List<Element>();
 
         public void addElement(Element element)
         {
             elements.Add(element);
+        }
+
+        public List<RangeValue> quicksort(List<RangeValue> arr)
+        {
+            List<RangeValue> loe = new List<RangeValue>(), gt = new List<RangeValue>();
+            if (arr.Count < 2)
+                return arr;
+            int pivot = arr.Count / 2;
+            double pivot_val = arr[pivot].getBoundingBox().Top;
+            arr.RemoveAt(pivot);
+            foreach (RangeValue i in arr)
+            {
+                if (i.getBoundingBox().Top <= pivot_val)
+                    loe.Add(i);
+                else if (i.getBoundingBox().Top > pivot_val)
+                    gt.Add(i);
+            }
+            List<RangeValue> resultSet = new List<RangeValue>();
+            resultSet.AddRange(quicksort(loe));
+            if (gt.Count == 0)
+                loe.Add(arr[pivot]);
+            else
+                gt.Add(arr[pivot]);
+            resultSet.AddRange(quicksort(gt));
+            return resultSet;
         }
 
         public void AddRangeValue(Unistroke u){
@@ -86,6 +112,10 @@ namespace SketchyGraph
                 }
             }
             return value;
+        }
+
+        public void sortRangeValues() { 
+                
         }
 
         public abstract void CalculateBoundingBoxes(double threshold);
