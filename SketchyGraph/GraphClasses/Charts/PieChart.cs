@@ -5,6 +5,7 @@ using System.Text;
 using System.Windows;
 using System.Windows.Ink;
 using SketchyGraph.Util;
+using System.Windows.Shapes;
 
 namespace SketchyGraph.GraphClasses.Charts
 {
@@ -13,11 +14,12 @@ namespace SketchyGraph.GraphClasses.Charts
         #region Elements 
         protected Stroke circumference;
         protected List<Stroke> slices;
-        protected List<UIElement> sliceLines;
+        protected List<Line> sliceLines;
         protected List<Point> circumPoints;
         protected Rect boundingBox;
         protected Point centerPoint;
         protected Circle area;
+        protected Point rightSideMed;
         #endregion
 
         #region Constructor
@@ -25,21 +27,31 @@ namespace SketchyGraph.GraphClasses.Charts
         {
             this.circumference = circumference;
             this.slices = new List<Stroke>();
-            this.sliceLines = new List<UIElement>();
+            this.sliceLines = new List<Line>();
             this.boundingBox = GetBoundingBox();
             this.centerPoint = FindCenter(this.boundingBox);
             this.area = CalculateCircleArea(this.boundingBox, this.centerPoint);
+            this.rightSideMed = new Point();
+            this.rightSideMed = CalculateRightPoint();
             double x = 0;
         }
         #endregion
 
         #region Public Methods
-        public void addSlices(UIElement slice)
+        public Point CalculateRightPoint()
+        {
+            Point temp = new Point();
+            temp.X = this.area.Center.X + this.area.Radius;
+            temp.Y = this.area.Center.Y;
+            return temp;
+        }
+
+        public void addSlices(Line slice)
         {
             sliceLines.Add(slice);
             if (sliceLines.Count > 1)
             {
-                PieSort();
+                this.sliceLines = PieSort();
             }
         }
 
@@ -103,9 +115,69 @@ namespace SketchyGraph.GraphClasses.Charts
         }
         #endregion
         #region Private Methods
-        private void PieSort()
+        private List<Line> PieSort()
         {
+            List<Line> topHalf = new List<Line>();
+            List<Line> bottomHalf = new List<Line>();
+            List<Line> resortedList = new List<Line>();
+            Dictionary<double, Line> topHalfDict = new Dictionary<double, Line>();
+            Dictionary<double, Line> bottomHalfDict = new Dictionary<double, Line>();
+            Point temp;
 
+            foreach (Line line in sliceLines)
+            {
+                if (line.Y2 <= rightSideMed.Y)
+                {
+                    topHalf.Add(line);
+                }
+                else
+                {
+                    bottomHalf.Add(line);
+                }
+
+            }
+
+            sliceLines.Clear();
+
+            if (topHalf.Count > 0)
+            {
+                double topHalfDist = 0;
+                for (int i = 0; i < topHalf.Count; i++)
+                {
+                    temp = new Point(topHalf[i].X2, topHalf[i].Y2);
+                    topHalfDist = GeneralUtil.EuclideanDistance(temp, rightSideMed);
+                    topHalfDict.Add(topHalfDist, topHalf[i]);
+                }
+                List<double> tempList = topHalfDict.Keys.ToList();
+                tempList.Sort();
+
+                for (int i = 0; i < tempList.Count; i++)
+                {
+                    resortedList.Add(topHalfDict[tempList[i]]);
+                }
+
+            }
+            if (bottomHalf.Count > 0)
+            {
+                double bottomHalfDist;
+                for (int i = 0; i < bottomHalf.Count; i++)
+                {
+                    temp = new Point(bottomHalf[i].X2, bottomHalf[i].Y2);
+                    bottomHalfDist = GeneralUtil.EuclideanDistance(temp, rightSideMed);
+                    bottomHalfDict.Add(bottomHalfDist, bottomHalf[i]);
+                }
+                List<double> tempList = bottomHalfDict.Keys.ToList();
+                tempList.Sort();
+                tempList.Reverse();
+
+                for (int i = 0; i < tempList.Count; i++)
+                {
+                    resortedList.Add(bottomHalfDict[tempList[i]]);
+                }
+            }
+
+            return resortedList;
+            //rightSideMed;
         }
         #endregion
     }
