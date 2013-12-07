@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Ink;
 using SketchyGraph.Util;
 using System.Windows.Shapes;
+using System.Diagnostics;
 
 namespace SketchyGraph.GraphClasses.Charts
 {
@@ -15,6 +16,7 @@ namespace SketchyGraph.GraphClasses.Charts
         protected Stroke circumference;
         protected List<Stroke> slices;
         protected List<Line> sliceLines;
+        protected List<SliceObject> sliceObjects;
         protected List<Point> circumPoints;
         protected Rect boundingBox;
         protected Point centerPoint;
@@ -28,6 +30,7 @@ namespace SketchyGraph.GraphClasses.Charts
             this.circumference = circumference;
             this.slices = new List<Stroke>();
             this.sliceLines = new List<Line>();
+            this.sliceObjects = new List<SliceObject>();
             this.boundingBox = GetBoundingBox();
             this.centerPoint = FindCenter(this.boundingBox);
             this.area = CalculateCircleArea(this.boundingBox, this.centerPoint);
@@ -52,6 +55,7 @@ namespace SketchyGraph.GraphClasses.Charts
             if (sliceLines.Count > 1)
             {
                 this.sliceLines = PieSort();
+                CreateAndReorderSliceObjects();
             }
         }
 
@@ -114,6 +118,7 @@ namespace SketchyGraph.GraphClasses.Charts
             return this.centerPoint;
         }
         #endregion
+
         #region Private Methods
         private List<Line> PieSort()
         {
@@ -178,6 +183,31 @@ namespace SketchyGraph.GraphClasses.Charts
 
             return resortedList;
             //rightSideMed;
+        }
+
+        private void CreateAndReorderSliceObjects()
+        {
+            sliceObjects.Clear();
+            for (int j = 0; j < sliceLines.Count-1; j++)
+            {
+
+                SliceObject temp = new SliceObject(sliceLines[j], sliceLines[j + 1]);
+                sliceObjects.Add(temp);
+
+            }
+            SliceObject turnaround = new SliceObject(sliceLines[sliceLines.Count - 1], sliceLines[0]);
+            sliceObjects.Add(turnaround);
+            Debug.WriteLine("Number of SliceObjects: " + sliceObjects.Count);
+
+            //Create the Percentages, call a method to calculate vectors?
+            foreach (SliceObject sObj in sliceObjects)
+            {
+                sObj.SetAngle(CalculateDegrees());
+            }
+        }
+        private double CalculateDegrees()
+        {
+            return 0;
         }
         #endregion
     }
