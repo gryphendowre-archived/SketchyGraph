@@ -45,7 +45,7 @@ namespace SketchyGraph.GraphClasses
         }
         public void SetPercentage(double percentage)
         {
-            this.percentage = Math.Round(percentage, 2, MidpointRounding.AwayFromZero);
+            this.percentage = Math.Round((percentage*100.0), 2, MidpointRounding.AwayFromZero);
         }
         public double GetAngle()
         {
@@ -53,8 +53,21 @@ namespace SketchyGraph.GraphClasses
         }
         public void SetAngle(double angle)
         {
+            if (angle < 0)
+            {
+                angle = angle + 360;
+            }
             this.angle = angle;
+
             SetPercentage(this.angle / 360.0);
+        }
+        public Line GetLine1()
+        {
+            return this.line1;
+        }
+        public Line GetLine2()
+        {
+            return this.line2;
         }
         #endregion
     }
