@@ -520,7 +520,8 @@ namespace SketchyGraph
                             ((PieChart)bgraph).addSlices(e.Stroke);
                             Debug.WriteLine("Number of Strokes inside: " + ((PieChart)bgraph).GetSlices().Count);
                         }
-                        
+                        //If more than 1 slice, run realtime calculation of angles.
+                        //Sorting method should be inside PieChart class, for constant sorting whenever slice added.u
                     }
                 }
                 if (flag)

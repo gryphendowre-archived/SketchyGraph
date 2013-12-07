@@ -10,7 +10,7 @@ namespace SketchyGraph.GraphClasses.Charts
 {
     public class PieChart : BaseGraph
     {
-
+        #region Elements 
         protected Stroke circumference;
         protected List<Stroke> slices;
         protected List<UIElement> sliceLines;
@@ -18,8 +18,9 @@ namespace SketchyGraph.GraphClasses.Charts
         protected Rect boundingBox;
         protected Point centerPoint;
         protected Circle area;
-        
+        #endregion
 
+        #region Constructor
         public PieChart(Stroke circumference)
         {
             this.circumference = circumference;
@@ -30,10 +31,16 @@ namespace SketchyGraph.GraphClasses.Charts
             this.area = CalculateCircleArea(this.boundingBox, this.centerPoint);
             double x = 0;
         }
+        #endregion
 
+        #region Public Methods
         public void addSlices(UIElement slice)
         {
             sliceLines.Add(slice);
+            if (sliceLines.Count > 1)
+            {
+                PieSort();
+            }
         }
 
         public void addSlices(Stroke slice)
@@ -94,5 +101,12 @@ namespace SketchyGraph.GraphClasses.Charts
         {
             return this.centerPoint;
         }
+        #endregion
+        #region Private Methods
+        private void PieSort()
+        {
+
+        }
+        #endregion
     }
 }
