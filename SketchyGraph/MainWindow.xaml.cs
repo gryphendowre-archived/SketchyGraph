@@ -400,6 +400,7 @@ namespace SketchyGraph
                             if (el != "")
                             {
                                 bgraph.AddRangeValue(new Unistroke(Utils.TransformStrokeToListPoints(e.Stroke), el));
+                                bgraph.rvalsorted = bgraph.quicksort(bgraph.rval);
                                 bgraph.maxRange = bgraph.returnMaxRange();
                             }
                         }
