@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Windows;
+using System.Windows.Ink;
 
 namespace SketchyGraph
 {
@@ -69,10 +70,10 @@ namespace SketchyGraph
             listvalues[b] = new RangeValue(temp);
         }*/
 
-        public void AddRangeValue(Unistroke u){
+        public void AddRangeValue(Unistroke u, Stroke e){
             if (rval.Count == 0)
             {
-                rval.Add(new RangeValue(u));
+                rval.Add(new RangeValue(u, e));
                 this.maxRange = Convert.ToDouble(u.value);
             }
             else
@@ -80,10 +81,11 @@ namespace SketchyGraph
                 Rect r = Unistroke.BoundingBox(u.points);
                 int i = getIndexofRangeValues(r);
                 if (i >= rval.Count)
-                    rval.Add(new RangeValue(u));
+                    rval.Add(new RangeValue(u, e));
                 else
                 {
                     rval[i].number.Add(u);
+                    rval[i].operation.Add(e);
                     rval[i].sortUnistrokebyBB();
                 }
             }

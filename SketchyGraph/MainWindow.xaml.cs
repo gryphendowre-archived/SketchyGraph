@@ -36,6 +36,7 @@ namespace SketchyGraph
         List<Samples> samples_letters = new List<Samples>();
         List<Samples> samples_numbers = new List<Samples>();
         List<Samples> samples_symbols = new List<Samples>();
+        List<Samples> samples_plot = new List<Samples>();
         List<Samples> samples = new List<Samples>();
         List<BaseGraph> graphs = new List<BaseGraph>();
         bool flagchart = false;
@@ -53,6 +54,7 @@ namespace SketchyGraph
             this.samples_letters = Utils.ReadFiles(System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "\\samples\\letters\\");
             this.samples_numbers = Utils.ReadFiles(System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "\\samples\\numbers\\");
             this.samples_symbols = Utils.ReadFiles(System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "\\samples\\symbols\\");
+            this.samples_plot = Utils.ReadFiles(System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "\\samples\\plot\\");
 
             this.samples.AddRange(this.samples_graphs);
             this.samples.AddRange(this.samples_letters);
@@ -278,28 +280,6 @@ namespace SketchyGraph
         #endregion
         
 
-        private Tuple<double, string, double> RecognizedSelected(List<Stroke> temp, bool print, List<Samples> samples)
-        {
-            double score = 0.75;
-            List<Unistroke> sel = Utils.TransformStrokesToUnistrokes(temp);
-            Unistroke points = Trazo.Combine_Strokes(sel);
-            if (points.points.Count > 3)
-            {
-                points.points = points.Resample(points.points, 96);
-                double w = points.IndicativeAngle(points.points);
-                points.points = points.RotateBy(points.points, -w);
-                points.points = points.ScaleDimTo(points.points, Unistroke.SIZE, points.d);
-                points.points = points.CheckRestoreOrientation(points.points, +w);
-                points.points = points.TranslateTo(points.points, points.O);
-                points.vector = points.CalcStartUnitVector(points.points, points.I);
-            }
-            DrawSampledPoints(points.points, Colors.Red, 1);
-            Tuple<Unistroke, double, string, double> result = Trazo.Recognize(points, points.vector, sel.Count, samples);
-            DrawSampledPoints(result.Item1.points, Colors.Blue, 1);
-            //textscore.Text = "Score: " + result.Item2.ToString() + "\n" + "Symbol: " + result.Item3.ToString();
-            return new Tuple<double, string, double>(result.Item2, result.Item3, score);
-        }
-
         private void PaperInk_StrokeCollected(object sender, InkCanvasStrokeCollectedEventArgs e)
         {
             Straw puntos = new Straw(e);
@@ -397,10 +377,17 @@ namespace SketchyGraph
                         }
                         else if (area == "y_bounds")
                         {
-                            string el = RealTimeGestureRecognition(e, this.samples_numbers);
+                            List<Samples> y_samples = new List<Samples>();
+                            y_samples.AddRange(this.samples_symbols);
+                            y_samples.AddRange(this.samples_numbers);
+
+                            string el = RealTimeGestureRecognition(e, y_samples);
                             if (el != "")
                             {
-                                bgraph.AddRangeValue(new Unistroke(Utils.TransformStrokeToListPoints(e.Stroke), el));
+                                bgraph.AddRangeValue(new Unistroke(Utils.TransformStrokeToListPoints(e.Stroke), el), e.Stroke);
+                                foreach (RangeValue rv in bgraph.rval) {
+                                    string v = rv.parse(this.samples_numbers);
+                                }
                                 ValidateWrongValues(bgraph.validateRangeValues());
                                 double b = 10;
                             }
@@ -437,7 +424,7 @@ namespace SketchyGraph
                             {
 
                                 double max = bgraph.maxRange;
-                                string el = RealTimeGestureRecognition(e, this.samples_symbols);
+                                string el = RealTimeGestureRecognition(e, this.samples_plot);
                                 if (el == "bar")
                                 {
                                     double y_e = e.Stroke.GetBounds().Top;
@@ -620,8 +607,8 @@ namespace SketchyGraph
                     Rect rvb = rv.getBoundingBox();
                     Rect rvbb = new Rect(rvb.Left - thres, rvb.Top - thres, rvb.Width + 2 * thres, rvb.Height + 2 * thres);
 
-                    //DrawRectangle(ebb, Brushes.Red);
-                    //DrawRectangle(rvbb, Brushes.Blue);
+                    DrawRectangle(ebb, Brushes.Red);
+                    DrawRectangle(rvbb, Brushes.Blue);
 
                     if (Utils.isInsideRect(rvbb, ebb))
                     {
@@ -853,7 +840,7 @@ namespace SketchyGraph
 
             if (selected.Count == 1)
             {
-                Tuple<double, string, double> result = RecognizedSelected(selected, true, samples);
+                Tuple<double, string, double> result = Recognizer.RecognizedSelected(selected, true, samples);
 
                 if (result.Item1 > 0.75)
                 {
@@ -874,18 +861,19 @@ namespace SketchyGraph
                     }
                     else
                         debugtxt.Text = result.Item2;
+                    val = result.Item2;
                 }
                 else
                     debugtxt.Text = "Non recognized";
 
-                val = result.Item2;
+                //val = result.Item2;
             }
             else if (selected.Count > 1)
             {
                 Stroke first = selected[0];
                 selected.RemoveAt(0);
                 Tuple<List<Stroke>, List<int>> temp = Utils.RobustIntersection(first, selected);
-                Tuple<double, string, double> result = RecognizedSelected(temp.Item1, true, samples);
+                Tuple<double, string, double> result = Recognizer.RecognizedSelected(temp.Item1, true, samples);
 
                 if (result.Item1 > 0.75)
                 {
@@ -963,9 +951,10 @@ namespace SketchyGraph
             resultstxt.Text = "";
             foreach (BaseGraph graph in this.graphs) {
                 resultstxt.Text += graph.type + "\n";
-                foreach (Element el in graph.elements) {
+                foreach (Element el in graph.elements)
                     resultstxt.Text += el.domain_val.val + "=" + el.range_val.val + "\n";
-                }
+                foreach (RangeValue rv in graph.rval)
+                    resultstxt.Text += rv.value + "\n";
                 resultstxt.Text += "\n";
             }
         }

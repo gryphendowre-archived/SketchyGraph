@@ -317,5 +317,24 @@ namespace SketchyGraph
             }
         }
 
+        public static Tuple<double, string, double> RecognizedSelected(List<Stroke> temp, bool print, List<Samples> samples)
+        {
+            double score = 0.75;
+            List<Unistroke> sel = Utils.TransformStrokesToUnistrokes(temp);
+            Unistroke points = Trazo.Combine_Strokes(sel);
+            if (points.points.Count > 3)
+            {
+                points.points = points.Resample(points.points, 96);
+                double w = points.IndicativeAngle(points.points);
+                points.points = points.RotateBy(points.points, -w);
+                points.points = points.ScaleDimTo(points.points, Unistroke.SIZE, points.d);
+                points.points = points.CheckRestoreOrientation(points.points, +w);
+                points.points = points.TranslateTo(points.points, points.O);
+                points.vector = points.CalcStartUnitVector(points.points, points.I);
+            }
+            Tuple<Unistroke, double, string, double> result = Trazo.Recognize(points, points.vector, sel.Count, samples);
+            return new Tuple<double, string, double>(result.Item2, result.Item3, score);
+        }
+
     }
 }

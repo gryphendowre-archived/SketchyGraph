@@ -75,12 +75,13 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="GraphClasses\SliceObject.cs" />
     <Compile Include="GraphClasses\Element.cs" />
     <Compile Include="GraphClasses\RangeValue.cs" />
+    <Compile Include="GraphClasses\SliceObject.cs" />
     <Compile Include="GraphClasses\Value.cs" />
     <Compile Include="Recognizer\Circle.cs" />
     <Compile Include="Recognizer\Gesture.cs" />
+    <Compile Include="Recognizer\Node.cs" />
     <Compile Include="Recognizer\Recognizer.cs" />
     <Compile Include="Recognizer\Samples.cs" />
     <Compile Include="Recognizer\Straw.cs" />
