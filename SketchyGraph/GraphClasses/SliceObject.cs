@@ -75,7 +75,7 @@ namespace SketchyGraph.GraphClasses
                 newColor.X2 = circle.Center.X + ((circle.Radius * 0.97) * Math.Cos((-(i + 1 + angleRightOffset)) * Math.PI / 180.0));
                 newColor.Y1 = line2.Y1;
                 newColor.Y2 = circle.Center.Y + ((circle.Radius * 0.97) * Math.Sin((-(i + 1 + angleRightOffset)) * Math.PI / 180.0));
-                newColor.Stroke = Brushes.Yellow;
+                newColor.Stroke = Brushes.White;
                 newColor.StrokeThickness = 2;
 
                 this.highlightedLines.Add(newColor);
@@ -88,7 +88,7 @@ namespace SketchyGraph.GraphClasses
                 newColor.X2 = circle.Center.X + ((circle.Radius * 0.97) * Math.Cos((i + 1 - angleLeftOffset) * Math.PI / 180.0));
                 newColor.Y1 = line2.Y1;
                 newColor.Y2 = circle.Center.Y + ((circle.Radius * 0.97) * Math.Sin((i + 1 - angleLeftOffset) * Math.PI / 180.0));
-                newColor.Stroke = Brushes.Yellow;
+                newColor.Stroke = Brushes.White;
                 newColor.StrokeThickness = 2;
 
                 this.highlightedLines.Add(newColor);

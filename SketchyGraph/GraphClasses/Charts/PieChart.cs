@@ -207,10 +207,10 @@ namespace SketchyGraph.GraphClasses.Charts
             {
                 sObj.SetAngle(CalculateDegrees(sObj));
             }
-            //foreach (SliceObject sObj in sliceObjects)
-            //{
-            //    sObj.CreatePath(area, this.rightSideMed);
-            //}
+            foreach (SliceObject sObj in sliceObjects)
+            {
+                sObj.CreatePath(area, this.rightSideMed);
+            }
             //sliceObjects[0].CreatePath(area, this.rightSideMed);
         }
         /*

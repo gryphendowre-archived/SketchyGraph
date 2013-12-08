@@ -518,12 +518,10 @@ namespace SketchyGraph
                             Line temp = new Line();
                             DrawLine(temp, bgraph, e.Stroke, false, false);
                             PaperInk.Strokes.Remove(e.Stroke);
-                            //Debug.WriteLine("Stroke is inside");
                             ((PieChart)bgraph).addSlices(e.Stroke);
-                            //Debug.WriteLine("Number of Strokes inside: " + ((PieChart)bgraph).GetSlices().Count);
                         }
                         //If more than 1 slice, run realtime calculation of angles.
-                        //Sorting method should be inside PieChart class, for constant sorting whenever slice added.u
+                        //Sorting method should be inside PieChart class, for constant sorting whenever slice added.
                     }
                 }
                 if (flag)
@@ -568,18 +566,53 @@ namespace SketchyGraph
                                 Line temp = new Line();
                                 DrawLine(temp, bgraph, e.Stroke, false, false);
                                 PaperInk.Strokes.Remove(e.Stroke);
-                                Debug.WriteLine("Stroke is inside");
                                 ((PieChart)bgraph).addSlices(e.Stroke);
-                                Debug.WriteLine("Number of Strokes inside: " + ((PieChart)bgraph).GetSlices().Count);
                             }
                            
                         }
+                        else if (bgraph.type == "PieChart" && bgraph.hasbeendrawn && StrokeNotInPieChart(e.Stroke, ((PieChart)bgraph)) == true)
+                        {
+                            if (((PieChart)bgraph).GetSliceObjects().Count > 1)
+                            {
+                                Debug.WriteLine("Begin hitpoint test");
+                                foreach (SliceObject sObj in ((PieChart)bgraph).GetSliceObjects())
+                                {
+                                    List<Line> tempLineList = new List<Line>();
+                                    tempLineList = sObj.GetHighLightedLines();
+                                    bool check = false;
+                                    foreach (Line tempLine in tempLineList)
+                                    {
+                                        if (e.Stroke.HitTest(GetBoundBoxOfLine(tempLine), 5))
+                                        {
+                                            Debug.WriteLine("YES, HIT THAT LINE");
+                                            check = true;
+                                            break;
+                                        }
+                                    }
+                                    if (check == true)
+                                    {
+                                        foreach (Line tempLine in tempLineList)
+                                        {
+                                            tempLine.Stroke = Brushes.Yellow;
+                                        }
+                                        break;
+                                    }
+                                }
+                            }
+                        }
                     }
-
                 }
                 //debugtxt.Text = selected.Count.ToString();
                 //tree = new Node<string>(el);
             }
+        }
+
+        public Rect GetBoundBoxOfLine(Line _element)
+        {
+            Rect rectangleBounds = new Rect();
+            Line x = new Line();
+            rectangleBounds = x.RenderTransform.TransformBounds(new Rect(new Point(_element.X1, _element.Y1), new Point(_element.X2, _element.Y2)));
+            return rectangleBounds;
         }
 
         /**
