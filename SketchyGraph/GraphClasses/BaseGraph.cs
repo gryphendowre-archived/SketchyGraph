@@ -17,43 +17,66 @@ namespace SketchyGraph
         public bool hasbeendrawn = false;
         public double thresh = 10.0;
         public List<RangeValue> rval = new List<RangeValue>();
-        public List<RangeValue> rvalsorted = new List<RangeValue>();
         public List<Element> elements = new List<Element>();
+        public bool blocked = false;
 
         public void addElement(Element element)
         {
             elements.Add(element);
         }
 
-        public List<RangeValue> quicksort(List<RangeValue> arr)
+        public void quicksort(List<RangeValue> input, int low, int high)
         {
-            List<RangeValue> loe = new List<RangeValue>(), gt = new List<RangeValue>();
-            if (arr.Count < 2)
-                return arr;
-            int pivot = arr.Count / 2;
-            double pivot_val = arr[pivot].getBoundingBox().Top;
-            arr.RemoveAt(pivot);
-            foreach (RangeValue i in arr)
+            int pivot_loc = 0;
+
+            if (low < high)
             {
-                if (i.getBoundingBox().Top <= pivot_val)
-                    loe.Add(i);
-                else if (i.getBoundingBox().Top > pivot_val)
-                    gt.Add(i);
+                pivot_loc = partition(input, low, high);
+                quicksort(input, low, pivot_loc - 1);
+                quicksort(input, pivot_loc + 1, high);
             }
-            List<RangeValue> resultSet = new List<RangeValue>();
-            resultSet.AddRange(quicksort(loe));
-            if (gt.Count == 0)
-                loe.Add(arr[pivot]);
-            else
-                gt.Add(arr[pivot]);
-            resultSet.AddRange(quicksort(gt));
-            return resultSet;
         }
+
+        private int partition(List<RangeValue> input, int low, int high)
+        {
+            Rect pivotbb = input[high].getBoundingBox();
+            double pivot = pivotbb.Top + (pivotbb.Height / 2);
+            int i = low - 1;
+            for (int j = low; j < high; j++)
+            {
+                Rect bb = input[j].getBoundingBox();
+                double center = bb.Top + (bb.Height / 2);
+                if ( center <= pivot)
+                {
+                    i++;
+                    swap(input, i, j);
+                }
+            }
+            swap(input, i + 1, high);
+            return i + 1;
+        }
+
+        public void swap(List<RangeValue> listvalues, int a, int b)
+        {
+            RangeValue temp = listvalues[a];
+            listvalues[a] = listvalues[b];
+            listvalues[b] = temp;
+        }
+
+        /*private void swap(List<RangeValue> listvalues, int a, int b) {
+            RangeValue temp = new RangeValue(listvalues[a]);
+            listvalues[a] = new RangeValue(listvalues[b]);
+            listvalues[b] = new RangeValue(temp);
+        }*/
 
         public void AddRangeValue(Unistroke u){
             if (rval.Count == 0)
+            {
                 rval.Add(new RangeValue(u));
-            else {
+                this.maxRange = Convert.ToDouble(u.value);
+            }
+            else
+            {
                 Rect r = Unistroke.BoundingBox(u.points);
                 int i = getIndexofRangeValues(r);
                 if (i >= rval.Count)
@@ -64,6 +87,79 @@ namespace SketchyGraph
                     rval[i].sortUnistrokebyBB();
                 }
             }
+
+            if (rval.Count > 1)
+            {
+                this.quicksort(this.rval, 0, this.rval.Count - 1);
+                this.maxRange = Convert.ToDouble(this.rval[0].value);
+            }
+        }
+
+        public List<RangeValue> validateRangeValues(){
+            List<RangeValue> redvals = new List<RangeValue>();
+            foreach(RangeValue rv in this.rval)
+                rv.state = true;
+            if (this.rval.Count > 1)
+            {
+                int i = 0;
+                int j = this.rval.Count - 1;
+                int k = 0;
+                int l = this.rval.Count - 1;
+                do
+                {
+                    i++;
+                    j--;
+                    if (this.rval[i].value > this.rval[k].value || this.rval[i].state == false)
+                        this.rval[i].state = false;
+                    else
+                        k++;
+                    if (this.rval[j].value < this.rval[l].value || this.rval[j].state == false)
+                        this.rval[j].state = false;
+                    else
+                        l--;
+                } while (i < j);
+
+                if (this.rval[0].value < this.rval[this.rval.Count - 1].value)
+                {
+                    this.rval[0].state = true;
+                    this.rval[this.rval.Count - 1].state = false;
+                }
+            }
+            foreach (RangeValue rv in this.rval)
+                if (rv.state == false)
+                    redvals.Add(new RangeValue(rv));
+            return redvals;
+        }
+
+        private void ReverseArray(ref double[] input)
+        {
+            Stack<double> tmp = new Stack<double>();
+            foreach (int i in input)
+                tmp.Push(i);
+            input = tmp.ToArray();
+        }
+
+        private int inactivateByValue(double val){
+            int index = -1, i = 0;
+            foreach (RangeValue rv in this.rval){
+                if (rv.value == val)
+                {
+                    rv.state = false;
+                    index = i;
+                }
+                i++;
+            }
+            return index;
+        }
+
+        private double[] getmeAListofvalues() {
+            double[] values = new double[this.rval.Count];
+            int i = 0;
+            foreach (RangeValue rv in this.rval) {
+                values[i] = rv.value;
+                i++;
+            }
+            return values;
         }
 
         public int getIndexofRangeValues(Rect r) {
@@ -112,10 +208,6 @@ namespace SketchyGraph
                 }
             }
             return value;
-        }
-
-        public void sortRangeValues() { 
-                
         }
 
         public abstract void CalculateBoundingBoxes(double threshold);

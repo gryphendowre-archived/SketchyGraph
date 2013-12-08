@@ -13,13 +13,24 @@ namespace SketchyGraph
     {
         public List<Unistroke> number = new List<Unistroke>();
         public double value;
+        public bool state = true;
+
+        public RangeValue(RangeValue rv) {
+            this.number = Clone(rv.number);
+            this.value = rv.value;
+        }
 
         public RangeValue(Unistroke u) {
             if (number.Count == 0)
+            {
                 number.Add(u);
-            else {
+                this.value = this.getNumericalValue();
+            }
+            else
+            {
                 int index = getMePositioninListByBB(u);
                 number.Insert(index, u);
+                this.value = this.getNumericalValue();
             }
         }
 

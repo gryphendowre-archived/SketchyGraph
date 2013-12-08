@@ -14,7 +14,57 @@ using System.Windows.Input;
 namespace SketchyGraph
 {
     class Utils
-    { 
+    {
+
+        public static bool isInsideRect(Rect container, Rect contained)
+        {
+            if ((contained.Left >= container.Left) && (contained.Right <= container.Right) && (contained.Top >= container.Top) && (contained.Bottom <= container.Bottom))
+                return true;
+            return false;
+        }
+
+        public static bool isInsidePlot(Point p, Rect bbplot)
+        {
+            if ((p.X > bbplot.Left) && (p.X < bbplot.Right) && (p.Y > bbplot.Top) && (p.Y < bbplot.Bottom))
+                return true;
+            return false;
+        }
+
+        public static void quicksort(double[] input, int low, int high)
+        {
+            int pivot_loc = 0;
+
+            if (low < high)
+            {
+                pivot_loc = partition(input, low, high);
+                quicksort(input, low, pivot_loc - 1);
+                quicksort(input, pivot_loc + 1, high);
+            }
+        }
+
+        private static int partition(double[] input, int low, int high)
+        {
+            double pivot = input[high];
+            int i = low - 1;
+
+            for (int j = low; j < high; j++)
+            {
+                if (input[j] <= pivot)
+                {
+                    i++;
+                    swap(input, i, j);
+                }
+            }
+            swap(input, i + 1, high);
+            return i + 1;
+        }
+
+        private static void swap(double[] ar, int a, int b)
+        {
+            double temp = ar[a];
+            ar[a] = ar[b];
+            ar[b] = temp;
+        }
 
         public static void Heap_Permute(int n, List<int> order, List<List<int>> orders)
         {

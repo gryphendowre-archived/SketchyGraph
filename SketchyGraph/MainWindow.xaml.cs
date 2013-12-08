@@ -40,7 +40,7 @@ namespace SketchyGraph
         bool flagchart = false;
         bool edgeLast = false;
         bool multipleSlice = false;
-        double extraspace_chart = 30.0;
+        double extraspace_chart = 40.0;
 
         public MainWindow()
         {
@@ -400,8 +400,8 @@ namespace SketchyGraph
                             if (el != "")
                             {
                                 bgraph.AddRangeValue(new Unistroke(Utils.TransformStrokeToListPoints(e.Stroke), el));
-                                bgraph.rvalsorted = bgraph.quicksort(bgraph.rval);
-                                bgraph.maxRange = bgraph.returnMaxRange();
+                                ValidateWrongValues(bgraph.validateRangeValues());
+                                double b = 10;
                             }
                         }
                         else if (area == "plot_bound")
@@ -578,6 +578,26 @@ namespace SketchyGraph
                 }
                 //debugtxt.Text = selected.Count.ToString();
                 //tree = new Node<string>(el);
+            }
+        }
+
+        public void ValidateWrongValues(List<RangeValue> rvals) { 
+            double thres = 5;
+            foreach(Stroke e in PaperInk.Strokes){
+                e.DrawingAttributes.Color = Colors.Black;
+                foreach (RangeValue rv in rvals) {
+                    Rect ebb = e.GetBounds();
+                    Rect rvb = rv.getBoundingBox();
+                    Rect rvbb = new Rect(rvb.Left - thres, rvb.Top - thres, rvb.Width + 2 * thres, rvb.Height + 2 * thres);
+
+                    //DrawRectangle(ebb, Brushes.Red);
+                    //DrawRectangle(rvbb, Brushes.Blue);
+
+                    if (Utils.isInsideRect(rvbb, ebb))
+                    {
+                        e.DrawingAttributes.Color = Colors.Red;
+                    }
+                }
             }
         }
 
