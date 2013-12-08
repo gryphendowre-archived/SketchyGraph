@@ -17,6 +17,7 @@ using System.Reflection;
 using SketchyGraph.GraphClasses.Charts;
 using System.Diagnostics;
 using SketchyGraph.Util;
+using SketchyGraph.GraphClasses;
 
 
 namespace SketchyGraph
@@ -501,7 +502,7 @@ namespace SketchyGraph
                     }
                     else if (bgraph.type == "PieChart" && StrokeNotInPieChart(e.Stroke, ((PieChart)bgraph)) == false)
                     {
-                        Debug.WriteLine("Stroke is inside");
+                        //Debug.WriteLine("Stroke is inside");
                         if (multipleSlice == true)
                         {
                             Line temp1 = new Line();
@@ -517,12 +518,10 @@ namespace SketchyGraph
                             Line temp = new Line();
                             DrawLine(temp, bgraph, e.Stroke, false, false);
                             PaperInk.Strokes.Remove(e.Stroke);
-                            Debug.WriteLine("Stroke is inside");
                             ((PieChart)bgraph).addSlices(e.Stroke);
-                            Debug.WriteLine("Number of Strokes inside: " + ((PieChart)bgraph).GetSlices().Count);
                         }
                         //If more than 1 slice, run realtime calculation of angles.
-                        //Sorting method should be inside PieChart class, for constant sorting whenever slice added.u
+                        //Sorting method should be inside PieChart class, for constant sorting whenever slice added.
                     }
                 }
                 if (flag)
@@ -567,25 +566,56 @@ namespace SketchyGraph
                                 Line temp = new Line();
                                 DrawLine(temp, bgraph, e.Stroke, false, false);
                                 PaperInk.Strokes.Remove(e.Stroke);
-                                Debug.WriteLine("Stroke is inside");
                                 ((PieChart)bgraph).addSlices(e.Stroke);
-                                Debug.WriteLine("Number of Strokes inside: " + ((PieChart)bgraph).GetSlices().Count);
                             }
                            
                         }
+                        else if (bgraph.type == "PieChart" && bgraph.hasbeendrawn && StrokeNotInPieChart(e.Stroke, ((PieChart)bgraph)) == true)
+                        {
+                            if (((PieChart)bgraph).GetSliceObjects().Count > 1)
+                            {
+                                Debug.WriteLine("Begin hitpoint test");
+                                foreach (SliceObject sObj in ((PieChart)bgraph).GetSliceObjects())
+                                {
+                                    List<Line> tempLineList = new List<Line>();
+                                    tempLineList = sObj.GetHighLightedLines();
+                                    bool check = false;
+                                    foreach (Line tempLine in tempLineList)
+                                    {
+                                        if (e.Stroke.HitTest(GetBoundBoxOfLine(tempLine), 5))
+                                        {
+                                            Debug.WriteLine("YES, HIT THAT LINE");
+                                            check = true;
+                                            break;
+                                        }
+                                    }
+                                    if (check == true)
+                                    {
+                                        foreach (Line tempLine in tempLineList)
+                                        {
+                                            tempLine.Stroke = Brushes.Yellow;
+                                        }
+                                        break;
+                                    }
+                                }
+                            }
+                        }
                     }
-
                 }
                 //debugtxt.Text = selected.Count.ToString();
                 //tree = new Node<string>(el);
             }
         }
 
-        public void ValidateWrongValues(List<RangeValue> rvals) { 
+
+        public void ValidateWrongValues(List<RangeValue> rvals)
+        {
             double thres = 5;
-            foreach(Stroke e in PaperInk.Strokes){
+            foreach (Stroke e in PaperInk.Strokes)
+            {
                 e.DrawingAttributes.Color = Colors.Black;
-                foreach (RangeValue rv in rvals) {
+                foreach (RangeValue rv in rvals)
+                {
                     Rect ebb = e.GetBounds();
                     Rect rvb = rv.getBoundingBox();
                     Rect rvbb = new Rect(rvb.Left - thres, rvb.Top - thres, rvb.Width + 2 * thres, rvb.Height + 2 * thres);
@@ -599,6 +629,14 @@ namespace SketchyGraph
                     }
                 }
             }
+        }
+
+        public Rect GetBoundBoxOfLine(Line _element)
+        {
+            Rect rectangleBounds = new Rect();
+            Line x = new Line();
+            rectangleBounds = x.RenderTransform.TransformBounds(new Rect(new Point(_element.X1, _element.Y1), new Point(_element.X2, _element.Y2)));
+            return rectangleBounds;
         }
 
         /**
@@ -712,9 +750,61 @@ namespace SketchyGraph
             }
 
             ((PieChart)bgraph).addSlices(line);
-            line.Stroke = Brushes.Black;
-            line.StrokeThickness = 3;
-            PaperInk.Children.Add(line);
+            if (((PieChart)bgraph).GetModifiedStatus())
+            {
+                List<List<Line>> tempList = new List<List<Line>>();
+                foreach (SliceObject sObj in ((PieChart)bgraph).GetSliceObjects())
+                {
+                    tempList.Add(sObj.GetHighLightedLines());
+                }
+                foreach (List<Line> lineList in tempList)
+                {
+                    foreach (Line lineObj in lineList)
+                    {
+                        //foreach (UIElement ele in PaperInk.Children)
+                        //{
+                        //    if (ele.GetType() == typeof(Line))
+                        //    {
+                        //        if (ele == lineObj)
+                        //        {
+                        //            PaperInk.Children.Remove(ele);
+                        //        }
+                        //    }
+                            
+                        //}
+                        if (PaperInk.Children.Contains(lineObj))
+                            PaperInk.Children.Remove(lineObj);
+                    }
+                }
+                
+            }
+            if (((PieChart)bgraph).GetSliceObjects().Count > 1)
+            {
+                foreach (SliceObject sObj in ((PieChart)bgraph).GetSliceObjects())
+                {
+                    foreach (Line lineObject in sObj.GetHighLightedLines())
+                    {
+                        PaperInk.Children.Add(lineObject);
+                    }
+                    
+                }
+                ((PieChart)bgraph).SetModifiedStatus(false);
+            }
+
+            //Redraw Slice Lines
+            foreach (Line lineSlice in ((PieChart)bgraph).GetSliceLines())
+            {
+                if (PaperInk.Children.Contains(lineSlice))
+                    PaperInk.Children.Remove(lineSlice);
+
+                lineSlice.Stroke = Brushes.Black;
+                lineSlice.StrokeThickness = 3;
+                PaperInk.Children.Add(lineSlice);
+            }
+            //line.Stroke = Brushes.Black;
+            //line.StrokeThickness = 3;
+            //PaperInk.Children.Add(line);
+
         }
         /*
          * Method used to draw the rectangles representing the information boxes of a bar/point graph.
