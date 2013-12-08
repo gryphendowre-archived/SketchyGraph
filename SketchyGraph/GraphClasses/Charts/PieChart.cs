@@ -22,6 +22,7 @@ namespace SketchyGraph.GraphClasses.Charts
         protected Point centerPoint;
         protected Circle area;
         protected Point rightSideMed;
+        protected bool modified;
         #endregion
 
         #region Constructor
@@ -36,7 +37,7 @@ namespace SketchyGraph.GraphClasses.Charts
             this.area = CalculateCircleArea(this.boundingBox, this.centerPoint);
             this.rightSideMed = new Point();
             this.rightSideMed = CalculateRightPoint();
-            double x = 0;
+            this.modified = false;
         }
         #endregion
 
@@ -58,6 +59,7 @@ namespace SketchyGraph.GraphClasses.Charts
             {
                 this.sliceLines = PieSort();
                 CreateAndReorderSliceObjects();
+                this.modified = true;
             }
         }
 
@@ -205,6 +207,11 @@ namespace SketchyGraph.GraphClasses.Charts
             {
                 sObj.SetAngle(CalculateDegrees(sObj));
             }
+            //foreach (SliceObject sObj in sliceObjects)
+            //{
+            //    sObj.CreatePath(area, this.rightSideMed);
+            //}
+            //sliceObjects[0].CreatePath(area, this.rightSideMed);
         }
         /*
          * Finds the vector between two lines of an object and sets the Angle of the SliceObject.
@@ -239,6 +246,22 @@ namespace SketchyGraph.GraphClasses.Charts
         public Point GetCenterPoint()
         {
             return this.centerPoint;
+        }
+        public List<SliceObject> GetSliceObjects()
+        {
+            return this.sliceObjects;
+        }
+        public bool GetModifiedStatus()
+        {
+            return this.modified;
+        }
+        public void SetModifiedStatus(bool modified)
+        {
+            this.modified = modified;
+        }
+        public List<Line> GetSliceLines()
+        {
+            return this.sliceLines;
         }
         #endregion
     }
