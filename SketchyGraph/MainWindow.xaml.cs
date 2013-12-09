@@ -75,6 +75,8 @@ namespace SketchyGraph
             this.samples.AddRange(this.samples_numbers);
             this.samples.AddRange(this.samples_symbols);
 
+            resultstxt.FontSize = 18;
+
             pieNameSamples.AddRange(this.samples_letters);
             debugtxt.FontSize = 35;
         }
