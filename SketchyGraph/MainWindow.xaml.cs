@@ -664,6 +664,11 @@ namespace SketchyGraph
                 List<Line> tempLineList = new List<Line>();
                 tempLineList = sObj.GetHighLightedLines();
                 bool check = false;
+                if (sObj.justUpdated == false)
+                {
+                    AddOrUpdatePieInformation(sObj, false);
+                    continue;
+                }
                 foreach (Line tempLine in tempLineList)
                 {
                     if (e.HitTest(GetBoundBoxOfLine(tempLine), 5))
@@ -678,15 +683,7 @@ namespace SketchyGraph
                     if (this.prepareToSetName == true)
                     {
                         Debug.WriteLine("Sets Name");
-                        sObj.SetDataName(this.potentialPieObjectName);
-                        sObj.dataNameBox.Text = sObj.GetDataName();
-                        sObj.dataValBox.Text = sObj.GetPercentage() + "%";
-                        PaperInk.Children.Add(sObj.dataNameBox);
-                        PaperInk.Children.Add(sObj.dataValBox);
-                        InkCanvas.SetTop(sObj.dataNameBox, sObj.textLocation.Y);
-                        InkCanvas.SetLeft(sObj.dataNameBox, sObj.textLocation.X);
-                        InkCanvas.SetTop(sObj.dataValBox, sObj.dataLocation.Y);
-                        InkCanvas.SetLeft(sObj.dataValBox, sObj.dataLocation.X);
+                        AddOrUpdatePieInformation(sObj, false);
                         this.potentialPieObjectName = "";
                         
                         prepareToSetName = false;
@@ -700,6 +697,28 @@ namespace SketchyGraph
                     }
                     break;
                 }
+            }
+        }
+
+        public void AddOrUpdatePieInformation(SliceObject sObj, bool updateTrue)
+        {
+            //if (sObj.dataNameBox
+            if (PaperInk.Children.Contains(sObj.dataNameBox))
+                PaperInk.Children.Remove(sObj.dataNameBox);
+            if (PaperInk.Children.Contains(sObj.dataValBox))
+                PaperInk.Children.Remove(sObj.dataValBox);
+
+            if (updateTrue == false)
+            {               
+                sObj.SetDataName(this.potentialPieObjectName);
+                sObj.dataNameBox.Text = sObj.GetDataName();
+                sObj.dataValBox.Text = sObj.GetPercentage() + "%";
+                PaperInk.Children.Add(sObj.dataNameBox);
+                PaperInk.Children.Add(sObj.dataValBox);
+                InkCanvas.SetTop(sObj.dataNameBox, sObj.textLocation.Y);
+                InkCanvas.SetLeft(sObj.dataNameBox, sObj.textLocation.X);
+                InkCanvas.SetTop(sObj.dataValBox, sObj.dataLocation.Y);
+                InkCanvas.SetLeft(sObj.dataValBox, sObj.dataLocation.X);
             }
         }
 
@@ -846,6 +865,19 @@ namespace SketchyGraph
             }
 
             ((PieChart)bgraph).addSlices(line);
+
+            if (((PieChart)bgraph).holdingList.Count > 1)
+            {
+                foreach (SliceObject sliceObjHold in ((PieChart)bgraph).holdingList)
+                {
+                    if (sliceObjHold.tagged == false)
+                    {
+                        AddOrUpdatePieInformation(sliceObjHold, true);
+                    }
+                    sliceObjHold.tagged = false;
+                }
+            }
+
             if (((PieChart)bgraph).GetModifiedStatus())
             {
                 List<List<Line>> tempList = new List<List<Line>>();
@@ -931,9 +963,12 @@ namespace SketchyGraph
             }
             selected.Add(e.Stroke);
 
+            StrokeCollection selectCollect = new StrokeCollection(selected);
+
             if (selected.Count == 1)
             {
                 Tuple<double, string, double> result = Recognizer.RecognizedSelected(selected, true, samples);
+
 
                 if (result.Item1 > 0.75)
                 {
@@ -946,11 +981,29 @@ namespace SketchyGraph
                     }
                     else if (result.Item2 == "barchart")
                     {
-                        FeedbackTextbox(e, result);
-                        // delete from selected the one that is already recognized on this context.
-                        BarChart barchart = new BarChart(e.Stroke);
-                        barchart.type = "BarChart";
-                        graphs.Add(barchart);
+                        bool insideCheck = false;
+                        foreach (BaseGraph grph in graphs)
+                        {
+                            if (grph.type == "PieChart")
+                            {
+                                Rect pie = ((PieChart)grph).GetCircumference().GetBounds();
+                                Rect selectB = selectCollect.GetBounds();
+                                if (pie.TopLeft.X < selectB.TopLeft.X && pie.TopLeft.Y < selectB.TopLeft.Y
+                                    && pie.BottomRight.X > selectB.BottomRight.X && pie.BottomRight.Y > selectB.BottomRight.Y)
+                                {
+                                    insideCheck = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if (insideCheck == false)
+                        {
+                            FeedbackTextbox(e, result);
+                            // delete from selected the one that is already recognized on this context.
+                            BarChart barchart = new BarChart(e.Stroke);
+                            barchart.type = "BarChart";
+                            graphs.Add(barchart);
+                        }
                     }
                     else
                         debugtxt.Text = result.Item2;
@@ -972,11 +1025,30 @@ namespace SketchyGraph
                 {
                     if (result.Item2 == "barchart")
                     {
-                        FeedbackTextbox(e, result);
-                        // delete from selected the one that is already recognized on this context.
-                        BarChart barchart = new BarChart(temp.Item1[1], temp.Item1[0]);
-                        barchart.type = "BarChart";
-                        graphs.Add(barchart);
+                        bool insideCheck = false;
+                        foreach (BaseGraph grph in graphs)
+                        {
+                            if (grph.type == "PieChart")
+                            {
+                                Rect pie = ((PieChart)grph).GetCircumference().GetBounds();
+                                Rect selectB = selectCollect.GetBounds();
+                                if (pie.TopLeft.X < selectB.TopLeft.X && pie.TopLeft.Y < selectB.TopLeft.Y
+                                    && pie.BottomRight.X > selectB.BottomRight.X && pie.BottomRight.Y > selectB.BottomRight.Y)
+                                {
+                                    insideCheck = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if (insideCheck == false)
+                        {
+                            FeedbackTextbox(e, result);
+                            // delete from selected the one that is already recognized on this context.
+                            BarChart barchart = new BarChart(temp.Item1[1], temp.Item1[0]);
+                            barchart.type = "BarChart";
+                            graphs.Add(barchart);
+                        }
+                        
                     }
                     else
                     {
