@@ -26,6 +26,7 @@ namespace SketchyGraph.GraphClasses
         public bool newSlice = true;
         public bool justUpdated = false;
         public bool tagged = false;
+        public bool manipulated = false;
 
         public SliceObject()
         {
@@ -201,6 +202,10 @@ namespace SketchyGraph.GraphClasses
         public List<Line> GetHighLightedLines()
         {
             return this.highlightedLines;
+        }
+        public void SetHighlightedLines(List<Line> highlightedLines)
+        {
+            this.highlightedLines = highlightedLines;
         }
         #endregion
     }
