@@ -255,6 +255,7 @@ namespace SketchyGraph.GraphClasses.Charts
             //Create the Percentages, call a method to calculate vectors?
             foreach (SliceObject sObj in sliceObjects)
             {
+                //sObj.tagged = false;
                 if (sObj.newSlice == true)
                 {
                     sObj.SetAngle(CalculateDegrees(sObj));

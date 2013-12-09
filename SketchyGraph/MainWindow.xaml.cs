@@ -849,6 +849,7 @@ namespace SketchyGraph
                     {
                         AddOrUpdatePieInformation(sliceObjHold, true);
                     }
+                    sliceObjHold.tagged = false;
                 }
             }
 
