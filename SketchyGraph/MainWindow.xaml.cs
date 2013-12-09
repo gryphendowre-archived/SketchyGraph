@@ -380,17 +380,12 @@ namespace SketchyGraph
                             List<Samples> y_samples = new List<Samples>();
                             y_samples.AddRange(this.samples_symbols);
                             y_samples.AddRange(this.samples_numbers);
-
-                            string el = RealTimeGestureRecognition(e, y_samples);
-                            if (el != "")
-                            {
-                                bgraph.AddRangeValue(new Unistroke(Utils.TransformStrokeToListPoints(e.Stroke), el), e.Stroke);
-                                foreach (RangeValue rv in bgraph.rval) {
-                                    string v = rv.parse(this.samples_numbers);
-                                }
-                                ValidateWrongValues(bgraph.validateRangeValues());
-                                double b = 10;
-                            }
+                            bgraph.AddRangeValue(e.Stroke);
+                            foreach (RangeValue rv in bgraph.getRangeValuesModified())
+                                rv.parse(this.samples_numbers);
+                            bgraph.ResetModifiedFlag();
+                            ValidateWrongValues(bgraph.validateRangeValues());
+                            double b = 10;
                         }
                         else if (area == "plot_bound")
                         {
@@ -601,10 +596,11 @@ namespace SketchyGraph
             foreach (Stroke e in PaperInk.Strokes)
             {
                 e.DrawingAttributes.Color = Colors.Black;
+                
                 foreach (RangeValue rv in rvals)
                 {
                     Rect ebb = e.GetBounds();
-                    Rect rvb = rv.getBoundingBox();
+                    Rect rvb = rv.getBounds();
                     Rect rvbb = new Rect(rvb.Left - thres, rvb.Top - thres, rvb.Width + 2 * thres, rvb.Height + 2 * thres);
 
                     DrawRectangle(ebb, Brushes.Red);
