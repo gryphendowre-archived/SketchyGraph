@@ -40,12 +40,12 @@ namespace SketchyGraph
 
         private int partition(List<RangeValue> input, int low, int high)
         {
-            Rect pivotbb = input[high].getBoundingBox();
+            Rect pivotbb = input[high].getBounds();
             double pivot = pivotbb.Top + (pivotbb.Height / 2);
             int i = low - 1;
             for (int j = low; j < high; j++)
             {
-                Rect bb = input[j].getBoundingBox();
+                Rect bb = input[j].getBounds();
                 double center = bb.Top + (bb.Height / 2);
                 if ( center <= pivot)
                 {
@@ -97,6 +97,41 @@ namespace SketchyGraph
             }
         }
 
+        public List<RangeValue> getRangeValuesModified() {
+            List<RangeValue> rvals = new List<RangeValue>();
+            foreach (RangeValue rv in this.rval)
+                if (rv.modified)
+                    rvals.Add(rv);
+            return rvals;
+        }
+
+        public void ResetModifiedFlag() {
+            foreach (RangeValue rv in this.rval)
+                rv.modified = false;
+        }
+
+        public void AddRangeValue(Stroke e)
+        {
+            if (rval.Count == 0)
+                rval.Add(new RangeValue(e));
+            else
+            {
+                Rect r = e.GetBounds();
+                int i = getIndexofRangeValues(r);
+                if (i >= rval.Count)
+                    rval.Add(new RangeValue(e));
+                else
+                {
+                    rval[i].operation.Add(e);
+                    rval[i].modified = true;
+                }
+            }
+            if (rval.Count > 1)
+            {
+                this.quicksort(this.rval, 0, this.rval.Count - 1);
+            }
+        }
+
         public List<RangeValue> validateRangeValues(){
             List<RangeValue> redvals = new List<RangeValue>();
             foreach(RangeValue rv in this.rval)
@@ -129,7 +164,7 @@ namespace SketchyGraph
             }
             foreach (RangeValue rv in this.rval)
                 if (rv.state == false)
-                    redvals.Add(new RangeValue(rv));
+                    redvals.Add(rv);
             return redvals;
         }
 
@@ -169,7 +204,7 @@ namespace SketchyGraph
             double centroidr = r.Top + (r.Height / 2);
             foreach (RangeValue rv in rval)
             {
-                Rect rt = rv.getBoundingBox();
+                Rect rt = rv.getBounds();
                 double centroid = rt.Top + (rt.Height / 2);
                 if (centroidr > centroid - thresh && centroidr < centroid + thresh )
                 {
