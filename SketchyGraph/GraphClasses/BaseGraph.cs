@@ -43,6 +43,37 @@ namespace SketchyGraph
             }
         }
 
+        public void quicksort_domain(List<RangeValue> input, int low, int high)
+        {
+            int pivot_loc = 0;
+
+            if (low < high)
+            {
+                pivot_loc = partition_domain(input, low, high);
+                quicksort(input, low, pivot_loc - 1);
+                quicksort(input, pivot_loc + 1, high);
+            }
+        }
+
+        private int partition_domain(List<RangeValue> input, int low, int high)
+        {
+            Rect pivotbb = input[high].getBounds();
+            double pivot = pivotbb.Left + (pivotbb.Width / 2);
+            int i = low - 1;
+            for (int j = low; j < high; j++)
+            {
+                Rect bb = input[j].getBounds();
+                double center = bb.Left + (bb.Width/ 2);
+                if (center <= pivot)
+                {
+                    i++;
+                    swap(input, i, j);
+                }
+            }
+            swap(input, i + 1, high);
+            return i + 1;
+        }
+
         private int partition(List<RangeValue> input, int low, int high)
         {
             Rect pivotbb = input[high].getBounds();
@@ -115,6 +146,12 @@ namespace SketchyGraph
                 rv.modified = false;
         }
 
+        public void ResetDomainModifiedFlag()
+        {
+            foreach (RangeValue rv in this.domain)
+                rv.modified = false;
+        }
+
         public void AddRangeValue(Stroke e)
         {
             if (rval.Count == 0)
@@ -139,23 +176,23 @@ namespace SketchyGraph
 
         public void AddDomainValue(Stroke e)
         {
-            if (rval.Count == 0)
-                rval.Add(new RangeValue(e));
+            if (domain.Count == 0)
+                this.domain.Add(new RangeValue(e));
             else
             {
                 Rect r = e.GetBounds();
-                int i = getIndexofRangeValues(r);
-                if (i >= rval.Count)
-                    rval.Add(new RangeValue(e));
+                int i = getIndexofDomainValues(r);
+                if (i >= domain.Count)
+                    domain.Add(new RangeValue(e));
                 else
                 {
-                    rval[i].operation.Add(e);
-                    rval[i].modified = true;
+                    domain[i].operation.Add(e);
+                    domain[i].modified = true;
                 }
             }
-            if (rval.Count > 1)
+            if (domain.Count > 1)
             {
-                this.quicksort(this.rval, 0, this.rval.Count - 1);
+                this.quicksort_domain(this.domain, 0, this.domain.Count - 1);
             }
         }
 
@@ -190,6 +227,43 @@ namespace SketchyGraph
                 }
             }
             foreach (RangeValue rv in this.rval)
+                if (rv.state == false)
+                    redvals.Add(rv);
+            return redvals;
+        }
+
+        public List<RangeValue> validateDomainValues()
+        {
+            List<RangeValue> redvals = new List<RangeValue>();
+            foreach (RangeValue rv in this.domain)
+                rv.state = true;
+            if (this.domain.Count > 1)
+            {
+                int i = 0;
+                int j = this.domain.Count - 1;
+                int k = 0;
+                int l = this.domain.Count - 1;
+                do
+                {
+                    i++;
+                    j--;
+                    if (this.domain[i].value > this.domain[k].value || this.domain[i].state == false)
+                        this.domain[i].state = false;
+                    else
+                        k++;
+                    if (this.domain[j].value < this.domain[l].value || this.domain[j].state == false)
+                        this.domain[j].state = false;
+                    else
+                        l--;
+                } while (i < j);
+
+                if (this.domain[0].value < this.domain[this.domain.Count - 1].value)
+                {
+                    this.domain[0].state = true;
+                    this.domain[this.domain.Count - 1].state = false;
+                }
+            }
+            foreach (RangeValue rv in this.domain)
                 if (rv.state == false)
                     redvals.Add(rv);
             return redvals;
@@ -234,6 +308,23 @@ namespace SketchyGraph
                 Rect rt = rv.getBounds();
                 double centroid = rt.Top + (rt.Height / 2);
                 if (centroidr > centroid - thresh && centroidr < centroid + thresh )
+                {
+                    return i;
+                }
+                i++;
+            }
+            return i;
+        }
+
+        public int getIndexofDomainValues(Rect r)
+        {
+            int i = 0;
+            double centroidr = r.Left + (r.Width / 2);
+            foreach (RangeValue rv in domain)
+            {
+                Rect rt = rv.getBounds();
+                double centroid = rt.Left + (rt.Width / 2);
+                if (centroidr > centroid - thresh && centroidr < (rt.Right + r.Width))
                 {
                     return i;
                 }

@@ -53,8 +53,8 @@ namespace SketchyGraph
                     {
                         val += eval.Item2;
                     }
-                    //foreach (int index in check.Item2)
-                    //    operation_copy.RemoveAt(index);
+                    foreach (int index in check.Item2)
+                        operation_copy.RemoveAt(index);
                 }
             }
             string number = "";
@@ -64,7 +64,7 @@ namespace SketchyGraph
                     number += c;
                 else {
                     queue.Enqueue(number);
-                    queue.Enqueue(c);
+                    queue.Enqueue(c+"");
                     number = "";
                 }
             }
@@ -73,10 +73,16 @@ namespace SketchyGraph
 
             BuildTree();
             string expression = tree.Traverse();
+            int n;
+
             if (expression != "")
             {
-                NCalc.Expression res = new NCalc.Expression(expression);
-                this.value = Convert.ToDouble(res.Evaluate().ToString());
+                char c = expression[expression.Length-1];
+                if (char.IsDigit(c))
+                {
+                    NCalc.Expression res = new NCalc.Expression(expression);
+                    this.value = Convert.ToDouble(res.Evaluate().ToString());
+                }
             }
         }
 
