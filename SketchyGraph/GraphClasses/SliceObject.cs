@@ -23,6 +23,9 @@ namespace SketchyGraph.GraphClasses
         public TextBlock dataValBox;
         public Point textLocation;
         public Point dataLocation;
+        public bool newSlice = true;
+        public bool justUpdated = false;
+        public bool tagged = false;
 
         public SliceObject()
         {
@@ -152,6 +155,7 @@ namespace SketchyGraph.GraphClasses
             }
             textLocation = CalculateTextboxLocation(circle, 1.3);
             dataLocation = CalculateTextboxLocation2(circle, 12);
+            this.newSlice = false;
         }
 
         #region Getter/Setters

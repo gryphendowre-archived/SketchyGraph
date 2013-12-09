@@ -23,6 +23,7 @@ namespace SketchyGraph.GraphClasses.Charts
         protected Circle area;
         protected Point rightSideMed;
         protected bool modified;
+        public List<SliceObject> holdingList;
         #endregion
 
         #region Constructor
@@ -38,6 +39,7 @@ namespace SketchyGraph.GraphClasses.Charts
             this.rightSideMed = new Point();
             this.rightSideMed = CalculateRightPoint();
             this.modified = false;
+            this.holdingList = new List<SliceObject>();
         }
         #endregion
 
@@ -58,8 +60,9 @@ namespace SketchyGraph.GraphClasses.Charts
             if (sliceLines.Count > 1)
             {
                 this.sliceLines = PieSort();
-                CreateAndReorderSliceObjects();
+                holdingList = new List<SliceObject>(CreateAndReorderSliceObjects());
                 this.modified = true;
+
             }
         }
 
@@ -188,41 +191,84 @@ namespace SketchyGraph.GraphClasses.Charts
          * This method creates and reorders sliceObjects whenever a new object is created, which occurs
          * whenever a new slice line is added to the Pie Chart.
          */
-        private void CreateAndReorderSliceObjects()
+        private List<SliceObject> CreateAndReorderSliceObjects()
         {
-            List<SliceObject> holder = sliceObjects;
+            List<SliceObject> holder = new List<SliceObject>(sliceObjects);
 
             sliceObjects.Clear();
-            for (int j = 0; j < sliceLines.Count-1; j++)
+            int count = 0;
+            if (holder.Count > 1)
             {
+                for (int j = 0; j < sliceLines.Count - 1; j++)
+                {
+                    foreach (SliceObject slc in holder)
+                    {
+                        if (slc.GetLine1().Equals(sliceLines[j]) && slc.GetLine2().Equals(sliceLines[j + 1]))
+                        {
+                            sliceObjects.Add(slc);
+                            slc.tagged = true;
+                            count = 1;
+                            break;
+                        }
+                    }
+                    if (count == 0)
+                    {
+                         SliceObject temp = new SliceObject(sliceLines[j], sliceLines[j + 1]);
+                         sliceObjects.Add(temp);
+                    }
+                    count = 0;
+                }
+
                 foreach (SliceObject slc in holder)
                 {
-                    if (sliceLines[j] == slc.GetLine1() && sliceLines[j + 1] == slc.GetLine2())
+                    if (slc.GetLine1().Equals(sliceLines[sliceLines.Count - 1]) && slc.GetLine2().Equals(sliceLines[0]))
                     {
                         sliceObjects.Add(slc);
+                        slc.tagged = true;
+                        count = 1;
+                        break;
                     }
-                    else
-                    {
-                        SliceObject temp = new SliceObject(sliceLines[j], sliceLines[j + 1]);
-                        sliceObjects.Add(temp);
-                    }
+                }
+                if (count == 0)
+                {
+                    SliceObject temp = new SliceObject(sliceLines[sliceLines.Count - 1], sliceLines[0]);
+                    sliceObjects.Add(temp);
                 }
 
             }
-            SliceObject turnaround = new SliceObject(sliceLines[sliceLines.Count - 1], sliceLines[0]);
-            sliceObjects.Add(turnaround);
+            else
+            {
+                for (int j = 0; j < sliceLines.Count - 1; j++)
+                {
+                    SliceObject temp = new SliceObject(sliceLines[j], sliceLines[j + 1]);
+                    sliceObjects.Add(temp);
+                    if (j == sliceLines.Count - 2)
+                    {
+                        SliceObject temp2 = new SliceObject(sliceLines[sliceLines.Count - 1], sliceLines[0]);
+                        sliceObjects.Add(temp2);
+                    }
+                }
+            }
+
             Debug.WriteLine("Number of SliceObjects: " + sliceObjects.Count);
 
             //Create the Percentages, call a method to calculate vectors?
             foreach (SliceObject sObj in sliceObjects)
             {
-                sObj.SetAngle(CalculateDegrees(sObj));
+                if (sObj.newSlice == true)
+                {
+                    sObj.SetAngle(CalculateDegrees(sObj));
+                }
             }
             foreach (SliceObject sObj in sliceObjects)
             {
-                sObj.CreatePath(area, this.rightSideMed);
+                if (sObj.newSlice == true)
+                {
+                    sObj.CreatePath(area, this.rightSideMed);
+                    sObj.justUpdated = true;
+                }
             }
-            //sliceObjects[0].CreatePath(area, this.rightSideMed);
+            return holder;
         }
         /*
          * Finds the vector between two lines of an object and sets the Angle of the SliceObject.
