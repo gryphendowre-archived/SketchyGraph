@@ -18,6 +18,7 @@ using SketchyGraph.GraphClasses.Charts;
 using System.Diagnostics;
 using SketchyGraph.Util;
 using SketchyGraph.GraphClasses;
+using Xceed.Wpf.Toolkit;
 
 
 namespace SketchyGraph
@@ -71,7 +72,6 @@ namespace SketchyGraph
             y_samples.AddRange(this.samples_numbers);
 
             pieNameSamples.AddRange(this.samples_letters);
-
             debugtxt.FontSize = 35;
         }
 
@@ -106,6 +106,13 @@ namespace SketchyGraph
                 }
             }
         }
+
+        //Color changer button
+        private void ClrPcker_Background_SelectedColorChanged(object sender, RoutedPropertyChangedEventArgs<Color> e)
+        {
+            //PaperInk.DefaultDrawingAttributes.Color = ClrPcker_Background.SelectedColor;
+        }
+
         public void PaperInk_MouseDown(object sender, MouseButtonEventArgs e)
         {
             Point mouseP = Mouse.GetPosition(PaperInk);
@@ -342,6 +349,8 @@ namespace SketchyGraph
         public void DeleteStroke(Stroke e) {
             foreach (BaseGraph graph in this.graphs)
             {
+                // Range Values stuff
+                
                 List<int> todelete = new List<int>();
                 int index = 0;
                 foreach (RangeValue rv in graph.rval)
@@ -351,7 +360,7 @@ namespace SketchyGraph
                     {
                         rv.parse(this.samples_numbers);
                         graph.ResetModifiedFlag();
-                        ValidateWrongValues(graph.validateRangeValues());
+                        ValidateWrongValues(graph, graph.validateRangeValues());
                     }
                     else
                         todelete.Add(index);
@@ -359,6 +368,39 @@ namespace SketchyGraph
                 }
                 foreach (int a in todelete)
                     graph.rval.RemoveAt(a);
+                if (graph.rval.Count != 0)
+                    graph.maxRange = graph.rval[0].value;
+
+                // Domain Values stuff
+
+                List<int> deletion = new List<int>();
+                int domind = 0;
+                foreach (Element el in graph.elements) {
+                    if (el.domain_val != null)
+                    {
+                        if (e == el.domain_val.str)
+                        {
+                            if (el.plot == null)
+                                deletion.Add(domind);
+                            el.domain_val.val = "";
+                        }
+                    }
+                    if (el.str != null)
+                    {
+                        if (e == el.str)
+                        {
+                            if (el.domain_val == null || el.domain_val.val == "")
+                                deletion.Add(domind);
+                            el.plot = null;
+                            el.range_val = null;
+                            el.str = null;
+                            el.color_str = null;
+                        }
+                    }
+                    domind++;
+                }
+                foreach (int b in deletion)
+                    graph.elements.RemoveAt(b);
             }
         }
 
@@ -476,27 +518,55 @@ namespace SketchyGraph
                             x_samples.AddRange(this.samples_letters);
                             x_samples.AddRange(this.samples_numbers);
                             string el = RealTimeGestureRecognition(e, x_samples);
-                            bool valmodified = false;
 
-                            foreach (Element element in bgraph.elements)
+                            if (el != "")
                             {
-                                double a = e.Stroke.GetBounds().TopLeft.X + ((e.Stroke.GetBounds().TopRight.X - e.Stroke.GetBounds().TopLeft.X) / 2);
-                                if (a > (element.domain_val.x_val - 15.0) && a < (element.domain_val.x_val + 15.0))
+                                //numbers
+                                int n;
+                                if (int.TryParse(el, out n))
                                 {
-                                    element.domain_val.val = el;
-                                    element.domain_val.stroke_val = new Unistroke(Utils.TransformStrokeToListPoints(e.Stroke));
-                                    valmodified = true;
+                                    bgraph.AddDomainValue(e.Stroke);/*
+                                    foreach (RangeValue rv in bgraph.getRangeValuesModified())
+                                        rv.parse(this.samples_numbers);
+                                    bgraph.ResetModifiedFlag();
+                                    ValidateWrongValues(bgraph, bgraph.validateRangeValues());
+                                    if (bgraph.rval.Count != 0)
+                                        bgraph.maxRange = bgraph.rval[0].value;*/
                                 }
+                                else
+                                {
+                                    //letters
+                                    bool valmodified = false;
+                                    foreach (Element element in bgraph.elements)
+                                    {
+                                        double a = e.Stroke.GetBounds().TopLeft.X + ((e.Stroke.GetBounds().TopRight.X - e.Stroke.GetBounds().TopLeft.X) / 2);
+                                        if (element.domain_val != null)
+                                        {
+                                            if (a > (element.domain_val.x_val - 15.0) && a < (element.domain_val.x_val + 15.0))
+                                            {
+                                                element.domain_val.val = el;
+                                                element.domain_val.str = e.Stroke;
+                                                element.domain_val.stroke_val = new Unistroke(Utils.TransformStrokeToListPoints(e.Stroke));
+                                                valmodified = true;
+                                            }
+                                        }
+                                    }
+                                    if (!valmodified)
+                                    {
+                                        Element elem = new Element();
+                                        Value v = new Value(el, new Unistroke(Utils.TransformStrokeToListPoints(e.Stroke)));
+                                        Value w = new Value();
+                                        elem.domain_val = v;
+                                        elem.domain_val.str = e.Stroke;
+                                        elem.range_val = w;
+                                        bgraph.addElement(elem);
+                                    }
+                                }
+
+
                             }
-                            if (!valmodified)
-                            {
-                                Element elem = new Element();
-                                Value v = new Value(el, new Unistroke(Utils.TransformStrokeToListPoints(e.Stroke)));
-                                Value w = new Value();
-                                elem.domain_val = v;
-                                elem.range_val = w;
-                                bgraph.addElement(elem);
-                            }
+                            else
+                                PaperInk.Strokes.Remove(e.Stroke);
 
                         }
                         else if (area == "y_bounds")
@@ -508,8 +578,9 @@ namespace SketchyGraph
                                 foreach (RangeValue rv in bgraph.getRangeValuesModified())
                                     rv.parse(this.samples_numbers);
                                 bgraph.ResetModifiedFlag();
-                                ValidateWrongValues(bgraph.validateRangeValues());
-                                double b = 10;
+                                ValidateWrongValues(bgraph, bgraph.validateRangeValues());
+                                if(bgraph.rval.Count != 0)
+                                    bgraph.maxRange = bgraph.rval[0].value;
                             }
                             else
                                 PaperInk.Strokes.Remove(e.Stroke);
@@ -517,25 +588,28 @@ namespace SketchyGraph
                         else if (area == "plot_bound")
                         {
 
-                            if (e.Stroke.StylusPoints.Count == 1)
+                            if (e.Stroke.StylusPoints.Count <= 10)
                             {
                                 double width = 1.0;
                                 StylusPointCollection newpoints = new StylusPointCollection();
+                                Element selected_el = new Element();
                                 foreach (Element el in bgraph.elements) { 
                                     if(el.isInsidePlot(new Point(e.Stroke.StylusPoints[0].X, e.Stroke.StylusPoints[0].Y))){
                                         Rect bbel = Unistroke.BoundingBox(el.plot.points);
                                         width = bbel.Width;
                                         newpoints.Add(new StylusPoint(bbel.Left + (bbel.Width /2), bbel.Top));
                                         newpoints.Add(new StylusPoint(bbel.Left + (bbel.Width /2), bbel.Bottom));
+                                        selected_el = el;
                                     }
                                 }
                                 if (newpoints.Count > 0)
                                 {
                                     Stroke str = new Stroke(newpoints);
-                                    str.DrawingAttributes.Color = Colors.Yellow;
+                                    str.DrawingAttributes.Color = ClrPcker_Background.SelectedColor;
                                     str.DrawingAttributes.Width = width;
                                     str.DrawingAttributes.IsHighlighter = true;
                                     PaperInk.Strokes.Add(str);
+                                    selected_el.color_str = str;
                                 }
                                 else {
                                     //XY Plot
@@ -547,7 +621,8 @@ namespace SketchyGraph
 
                                 double max = bgraph.maxRange;
                                 string el = RealTimeGestureRecognition(e, this.samples_plot);
-                                if (el == "bar")
+                                //if ((el == "bar" || el == "bar_g") && max != 0.0)
+                                if (el == "bar" && max != 0.0)
                                 {
                                     double y_e = e.Stroke.GetBounds().Top;
                                     int index = bgraph.getIndexofRangeValues(y_e);
@@ -556,19 +631,19 @@ namespace SketchyGraph
                                     double y_max = 0.0;
                                     double y_min = 0.0;
                                     double val = 0.0;
-                                    if (index != 0 && index != bgraph.rval.Count)
+                                    if (index != 0 && index != bgraph.right_rval.Count)
                                     {
-                                        upper = bgraph.rval[index - 1].getNumericalValue();
-                                        lower = bgraph.rval[index].getNumericalValue();
-                                        y_max = bgraph.rval[index - 1].getBoundingBox().Top;
-                                        y_min = bgraph.rval[index].getBoundingBox().Bottom;
+                                        upper = bgraph.right_rval[index - 1].value;
+                                        lower = bgraph.right_rval[index].value;
+                                        y_max = bgraph.right_rval[index - 1].getBounds().Top + (bgraph.right_rval[index-1].getBounds().Height / 2);
+                                        y_min = bgraph.right_rval[index].getBounds().Bottom - (bgraph.right_rval[index].getBounds().Height / 2);
                                         val = (((y_e - y_min) / (y_max - y_min)) * (upper - lower)) + lower;
                                     }
-                                    else if (index == bgraph.rval.Count)
+                                    else if (index == bgraph.right_rval.Count)
                                     {
-                                        upper = bgraph.rval[bgraph.rval.Count - 1].getNumericalValue();
+                                        upper = bgraph.right_rval[bgraph.right_rval.Count - 1].value;
                                         lower = 0.0;
-                                        y_max = bgraph.rval[bgraph.rval.Count - 1].getBoundingBox().Top;
+                                        y_max = bgraph.right_rval[bgraph.right_rval.Count - 1].getBounds().Top + (bgraph.right_rval[bgraph.right_rval.Count - 1].getBounds().Height / 2);
                                         y_min = ((AxisPlot)bgraph).y.GetBounds().BottomLeft.Y;
                                         val = (((y_e - y_min) / (y_max - y_min)) * (upper - lower)) + lower;
                                     }
@@ -580,13 +655,61 @@ namespace SketchyGraph
                                     foreach (Element element in bgraph.elements)
                                     {
                                         double a = e.Stroke.GetBounds().TopLeft.X + ((e.Stroke.GetBounds().TopRight.X - e.Stroke.GetBounds().TopLeft.X) / 2);
-                                        if (a > (element.domain_val.x_val - 15.0) && a < (element.domain_val.x_val + 15.0))
+                                        if (element.domain_val != null)
                                         {
-                                            element.plot = new Unistroke(Utils.TransformStrokeToListPoints(e.Stroke));
-                                            element.range_val.val = Convert.ToString(val);
+                                            if (a > (element.domain_val.x_val - 15.0) && a < (element.domain_val.x_val + 15.0))
+                                            {
+                                                element.plot = new Unistroke(Utils.TransformStrokeToListPoints(e.Stroke));
+                                                element.str = e.Stroke;
+                                                if (element.range_val == null)
+                                                    element.range_val = new Value();
+                                                element.range_val.val = Convert.ToString(val);
+                                            }
                                         }
                                     }
                                 }
+                                else if(el == "check"){
+                                    if(bgraph.maxRange > 0.0){
+                                        foreach (Element elem in bgraph.elements)
+                                        {
+                                            if (elem.str != null && elem.domain_val != null && elem.range_val != null && elem.plot != null)
+                                            {
+                                                double y_e = elem.str.GetBounds().Top;
+                                                int index = bgraph.getIndexofRangeValues(y_e);
+                                                double upper = 0.0;
+                                                double lower = 0.0;
+                                                double y_max = 0.0;
+                                                double y_min = 0.0;
+                                                double val = 0.0;
+                                                if (index != 0 && index != bgraph.right_rval.Count)
+                                                {
+                                                    upper = bgraph.right_rval[index - 1].value;
+                                                    lower = bgraph.right_rval[index].value;
+                                                    y_max = bgraph.right_rval[index - 1].getBounds().Top + (bgraph.right_rval[index - 1].getBounds().Height / 2);
+                                                    y_min = bgraph.right_rval[index].getBounds().Bottom - (bgraph.right_rval[index].getBounds().Height / 2);
+                                                    val = (((y_e - y_min) / (y_max - y_min)) * (upper - lower)) + lower;
+                                                }
+                                                else if (index == bgraph.right_rval.Count)
+                                                {
+                                                    upper = bgraph.right_rval[bgraph.right_rval.Count - 1].value;
+                                                    lower = 0.0;
+                                                    y_max = bgraph.right_rval[bgraph.right_rval.Count - 1].getBounds().Top + (bgraph.right_rval[bgraph.right_rval.Count - 1].getBounds().Height / 2);
+                                                    y_min = ((AxisPlot)bgraph).y.GetBounds().BottomLeft.Y;
+                                                    val = (((y_e - y_min) / (y_max - y_min)) * (upper - lower)) + lower;
+                                                }
+                                                else
+                                                {
+                                                    val = bgraph.maxRange;
+                                                }
+                                                elem.range_val.val = Convert.ToString(val);
+                                            }
+                                        }
+                                        
+                                    }
+                                    PaperInk.Strokes.Remove(e.Stroke);
+                                    this.calculate.RaiseEvent(new RoutedEventArgs(Button.ClickEvent, this.calculate));
+                                }else
+                                    PaperInk.Strokes.Remove(e.Stroke);
                             }
                         }
                         else
@@ -722,25 +845,27 @@ namespace SketchyGraph
             }
         }
 
-        public void ValidateWrongValues(List<RangeValue> rvals)
+        public void ValidateWrongValues(BaseGraph bg, List<RangeValue> rvals)
         {
             double thres = 5;
             foreach (Stroke e in PaperInk.Strokes)
             {
-                e.DrawingAttributes.Color = Colors.Black;
-                
-                foreach (RangeValue rv in rvals)
+                if (((AxisPlot)bg).y_bounds.Contains(e.GetBounds()))
                 {
-                    Rect ebb = e.GetBounds();
-                    Rect rvb = rv.getBounds();
-                    Rect rvbb = new Rect(rvb.Left - thres, rvb.Top - thres, rvb.Width + 2 * thres, rvb.Height + 2 * thres);
-
-                    //DrawRectangle(ebb, Brushes.Red);
-                    //DrawRectangle(rvbb, Brushes.Blue);
-
-                    if (Utils.isInsideRect(rvbb, ebb))
+                    e.DrawingAttributes.Color = Colors.Black;
+                    foreach (RangeValue rv in rvals)
                     {
-                        e.DrawingAttributes.Color = Colors.Red;
+                        Rect ebb = e.GetBounds();
+                        Rect rvb = rv.getBounds();
+                        Rect rvbb = new Rect(rvb.Left - thres, rvb.Top - thres, rvb.Width + 2 * thres, rvb.Height + 2 * thres);
+
+                        //DrawRectangle(ebb, Brushes.Red);
+                        //DrawRectangle(rvbb, Brushes.Blue);
+
+                        if (Utils.isInsideRect(rvbb, ebb))
+                        {
+                            e.DrawingAttributes.Color = Colors.Red;
+                        }
                     }
                 }
             }
@@ -1116,8 +1241,14 @@ namespace SketchyGraph
             resultstxt.Text = "";
             foreach (BaseGraph graph in this.graphs) {
                 resultstxt.Text += graph.type + "\n";
-                foreach (Element el in graph.elements)
-                    resultstxt.Text += el.domain_val.val + "=" + el.range_val.val + "\n";
+                foreach (Element el in graph.elements){
+                    if(el.domain_val != null)
+                        resultstxt.Text += el.domain_val.val + "=";
+                    if (el.range_val != null) 
+                        resultstxt.Text += el.range_val.val + "\n";
+                }
+
+                resultstxt.Text += "\n Range Values \n";
                 foreach (RangeValue rv in graph.rval)
                     resultstxt.Text += rv.value + "\n";
                 resultstxt.Text += "\n";

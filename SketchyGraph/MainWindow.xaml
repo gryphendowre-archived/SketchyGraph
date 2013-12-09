@@ -1,6 +1,7 @@
 ﻿<Window x:Class="SketchyGraph.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         Title="MainWindow" Height="700" Width="1050">
     <Grid x:Name="mainGrid">
         <Grid.RowDefinitions>
@@ -61,18 +62,18 @@
                     <Button Name="LassonTB" Click="lassoButton_Click">
                         <Image Source="ToolbarGraphics\Lasso.PNG" Height="35" Width="50" />
                     </Button>
+
                 </Menu>
 
-
+                <xctk:ColorPicker Name="ClrPcker_Background" SelectedColorChanged="ClrPcker_Background_SelectedColorChanged"></xctk:ColorPicker>
             </ToolBar>
 
         </ToolBarTray>
 
         <InkCanvas x:Name="PaperInk" Grid.Row="2" Background="White" IsManipulationEnabled="True" IsEnabled="True" StrokeCollected="PaperInk_StrokeCollected"> 
         </InkCanvas>
-        <TextBox Grid.Row="1" Height="50" HorizontalAlignment="Left" Margin="334,0,0,0" Name="debugtxt" VerticalAlignment="Top" Width="694" />
-        <TextBox Grid.Row="2" Height="52" HorizontalAlignment="Left" Margin="0,531,0,0" Name="msgtxt" VerticalAlignment="Top" Width="1028" />
+        <TextBox Grid.Row="1" Height="50" HorizontalAlignment="Left" Margin="415,0,0,0" Name="debugtxt" VerticalAlignment="Top" Width="613" />
         <TextBlock Grid.Row="2" Height="533" HorizontalAlignment="Left" Margin="880,0,0,0" Name="resultstxt" Text="" VerticalAlignment="Top" Width="148" />
-        <Button Content="calculate" Grid.Row="2" Height="37" HorizontalAlignment="Left" Margin="734,474,0,0" Name="calculate" VerticalAlignment="Top" Width="110" Click="calculate_Click" />
+        <Button Content="calculate" Grid.Row="2" Height="37" HorizontalAlignment="Left" Margin="906,534,0,0" Name="calculate" VerticalAlignment="Top" Width="110" Click="calculate_Click" />
     </Grid>
 </Window>
