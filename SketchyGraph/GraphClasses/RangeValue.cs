@@ -39,7 +39,8 @@ namespace SketchyGraph
                 if (check.Item1.Count == 1)
                 {
                     Tuple<double, string, double> eval = Recognizer.RecognizedSelected(check.Item1, false, samples);
-                    val += eval.Item2;
+                    if(eval.Item1 >= 0.75)
+                        val += eval.Item2;
                 }
                 else
                 {
@@ -52,8 +53,8 @@ namespace SketchyGraph
                     {
                         val += eval.Item2;
                     }
-                    foreach (int index in check.Item2)
-                        operation_copy.RemoveAt(index);
+                    //foreach (int index in check.Item2)
+                    //    operation_copy.RemoveAt(index);
                 }
             }
             string number = "";
@@ -72,8 +73,11 @@ namespace SketchyGraph
 
             BuildTree();
             string expression = tree.Traverse();
-            NCalc.Expression res = new NCalc.Expression(expression);
-            this.value = Convert.ToDouble(res.Evaluate().ToString());
+            if (expression != "")
+            {
+                NCalc.Expression res = new NCalc.Expression(expression);
+                this.value = Convert.ToDouble(res.Evaluate().ToString());
+            }
         }
 
         public void BuildTree()
@@ -172,7 +176,10 @@ namespace SketchyGraph
             List<Point> listp = new List<Point>();
             foreach(Stroke e in this.operation)
                 listp.AddRange(Utils.TransformStrokeToListPoints(e));
-            return Unistroke.BoundingBox(listp);
+            if (listp.Count == 0)
+                return new Rect();
+            else
+                return Unistroke.BoundingBox(listp);
         }
 
         public double getNumericalValue(){

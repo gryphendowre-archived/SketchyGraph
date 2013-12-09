@@ -37,6 +37,7 @@ namespace SketchyGraph
         List<Samples> samples_numbers = new List<Samples>();
         List<Samples> samples_symbols = new List<Samples>();
         List<Samples> samples_plot = new List<Samples>();
+        List<Samples> y_samples = new List<Samples>();
         List<Samples> samples = new List<Samples>();
         List<BaseGraph> graphs = new List<BaseGraph>();
         bool flagchart = false;
@@ -73,6 +74,9 @@ namespace SketchyGraph
             this.samples.AddRange(this.samples_letters);
             this.samples.AddRange(this.samples_numbers);
             this.samples.AddRange(this.samples_symbols);
+
+            y_samples.AddRange(this.samples_symbols);
+            y_samples.AddRange(this.samples_numbers);
 
             pieNameSamples.AddRange(this.samples_letters);
 
@@ -448,7 +452,29 @@ namespace SketchyGraph
             }
         }
         #endregion
-        
+
+        public void DeleteStroke(Stroke e) {
+            foreach (BaseGraph graph in this.graphs)
+            {
+                List<int> todelete = new List<int>();
+                int index = 0;
+                foreach (RangeValue rv in graph.rval)
+                {
+                    rv.operation.Remove(e);
+                    if (rv.operation.Count >= 1)
+                    {
+                        rv.parse(this.samples_numbers);
+                        graph.ResetModifiedFlag();
+                        ValidateWrongValues(graph.validateRangeValues());
+                    }
+                    else
+                        todelete.Add(index);
+                    index++;
+                }
+                foreach (int a in todelete)
+                    graph.rval.RemoveAt(a);
+            }
+        }
 
         private void PaperInk_StrokeCollected(object sender, InkCanvasStrokeCollectedEventArgs e)
         {
@@ -464,6 +490,7 @@ namespace SketchyGraph
                     if (e.Stroke.HitTest(PaperInk.Strokes[i].GetBounds(), 10))
                     {
                         selected.Remove(PaperInk.Strokes[i]);
+                        DeleteStroke(PaperInk.Strokes[i]);
                         PaperInk.Strokes.RemoveAt(i);
                     }
                 PaperInk.Strokes.Remove(e.Stroke);
@@ -501,17 +528,14 @@ namespace SketchyGraph
                 {
                     string el = RealTimeGestureRecognition(e, this.samples);
                 }
-
                 foreach (BaseGraph bgraph in graphs)
                 {
                     if (bgraph.type == "PieChart" && !bgraph.hasbeendrawn)
                     {
                         //Circle circ = ((PieChart)bgraph).GetCircleArea();
-
                         DrawCircle(((PieChart)bgraph).GetCircleArea(), Brushes.Black);
                         if (e.Stroke == ((PieChart)bgraph).GetCircumference())
                             PaperInk.Strokes.Remove(e.Stroke);
-
                         bgraph.hasbeendrawn = true;
                     }
                     else if (bgraph.type == "PieChart" && bgraph.hasbeendrawn)
@@ -538,7 +562,6 @@ namespace SketchyGraph
                             PaperInk.Strokes.Remove(e.Stroke);
                             ((PieChart)bgraph).addSlices(e.Stroke);
                         }
-
                         //If more than 1 slice, run realtime calculation of angles.
                         //Sorting method should be inside PieChart class, for constant sorting whenever slice added.
                     }
@@ -592,16 +615,18 @@ namespace SketchyGraph
                         }
                         else if (area == "y_bounds")
                         {
-                            List<Samples> y_samples = new List<Samples>();
-                            y_samples.AddRange(this.samples_symbols);
-                            y_samples.AddRange(this.samples_numbers);
-
-                            bgraph.AddRangeValue(e.Stroke);
-                            foreach (RangeValue rv in bgraph.getRangeValuesModified())
-                                rv.parse(this.samples_numbers);
-                            bgraph.ResetModifiedFlag();
-                            ValidateWrongValues(bgraph.validateRangeValues());
-                            double b = 10;
+                            string el = RealTimeGestureRecognition(e, this.samples_numbers);
+                            if (el != "")
+                            {
+                                bgraph.AddRangeValue(e.Stroke);
+                                foreach (RangeValue rv in bgraph.getRangeValuesModified())
+                                    rv.parse(this.samples_numbers);
+                                bgraph.ResetModifiedFlag();
+                                ValidateWrongValues(bgraph.validateRangeValues());
+                                double b = 10;
+                            }
+                            else
+                                PaperInk.Strokes.Remove(e.Stroke);
                         }
                         else if (area == "plot_bound")
                         {
@@ -836,8 +861,8 @@ namespace SketchyGraph
                     Rect rvb = rv.getBounds();
                     Rect rvbb = new Rect(rvb.Left - thres, rvb.Top - thres, rvb.Width + 2 * thres, rvb.Height + 2 * thres);
 
-                    DrawRectangle(ebb, Brushes.Red);
-                    DrawRectangle(rvbb, Brushes.Blue);
+                    //DrawRectangle(ebb, Brushes.Red);
+                    //DrawRectangle(rvbb, Brushes.Blue);
 
                     if (Utils.isInsideRect(rvbb, ebb))
                     {
