@@ -190,12 +190,23 @@ namespace SketchyGraph.GraphClasses.Charts
          */
         private void CreateAndReorderSliceObjects()
         {
+            List<SliceObject> holder = sliceObjects;
+
             sliceObjects.Clear();
             for (int j = 0; j < sliceLines.Count-1; j++)
             {
-
-                SliceObject temp = new SliceObject(sliceLines[j], sliceLines[j + 1]);
-                sliceObjects.Add(temp);
+                foreach (SliceObject slc in holder)
+                {
+                    if (sliceLines[j] == slc.GetLine1() && sliceLines[j + 1] == slc.GetLine2())
+                    {
+                        sliceObjects.Add(slc);
+                    }
+                    else
+                    {
+                        SliceObject temp = new SliceObject(sliceLines[j], sliceLines[j + 1]);
+                        sliceObjects.Add(temp);
+                    }
+                }
 
             }
             SliceObject turnaround = new SliceObject(sliceLines[sliceLines.Count - 1], sliceLines[0]);
