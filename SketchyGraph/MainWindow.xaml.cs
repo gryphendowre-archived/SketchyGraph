@@ -638,13 +638,14 @@ namespace SketchyGraph
                                 int n;
                                 if (int.TryParse(el, out n))
                                 {
-                                    bgraph.AddDomainValue(e.Stroke);/*
-                                    foreach (RangeValue rv in bgraph.getRangeValuesModified())
-                                        rv.parse(this.samples_numbers);
-                                    bgraph.ResetModifiedFlag();
+                                    bgraph.AddDomainValue(e.Stroke);
+                                    foreach (RangeValue rv in bgraph.domain)
+                                        rv.parse(this.samples_numbers);                                   
+                                    bgraph.ResetDomainModifiedFlag();
                                     ValidateWrongValues(bgraph, bgraph.validateRangeValues());
                                     if (bgraph.rval.Count != 0)
-                                        bgraph.maxRange = bgraph.rval[0].value;*/
+                                        bgraph.maxRange = bgraph.rval[0].value;
+                                    double a = 5.0;
                                 }
                                 else
                                 {
@@ -684,12 +685,15 @@ namespace SketchyGraph
                         }
                         else if (area == "y_bounds")
                         {
-                            string el = RealTimeGestureRecognition(e, this.samples_numbers);
+                            List<Samples> samples_ = new List<Samples>();
+                            samples_.AddRange(this.samples_numbers);
+                            samples_.AddRange(this.samples_symbols);
+                            string el = RealTimeGestureRecognition(e, samples_);
                             if (el != "")
                             {
                                 bgraph.AddRangeValue(e.Stroke);
                                 foreach (RangeValue rv in bgraph.getRangeValuesModified())
-                                    rv.parse(this.samples_numbers);
+                                    rv.parse(samples_);
                                 bgraph.ResetModifiedFlag();
                                 ValidateWrongValues(bgraph, bgraph.validateRangeValues());
                                 if(bgraph.rval.Count != 0)
