@@ -926,11 +926,12 @@ namespace SketchyGraph
                     }
                     else
                     {
+                        SolidColorBrush brsh = new SolidColorBrush(ClrPcker_Background.SelectedColor);
                         foreach (Line tempLine in tempLineList)
                         {
-                            tempLine.Stroke = Brushes.Yellow;
+                            tempLine.Stroke = brsh;
                         }
-                        sObj.SetHighlightedBrush(Brushes.Yellow);
+                        sObj.SetHighlightedBrush(brsh);
                         sObj.SetHighlightedLines(tempLineList);
                     }
                     break;
