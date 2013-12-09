@@ -27,7 +27,7 @@ namespace SketchyGraph.GraphClasses
         public bool justUpdated = false;
         public bool tagged = false;
         public bool manipulated = false;
-        private Brush highlightLineColor;
+        private SolidColorBrush highlightLineColor;
 
         public SliceObject()
         {
@@ -209,11 +209,11 @@ namespace SketchyGraph.GraphClasses
         {
             this.highlightedLines = highlightedLines;
         }
-        public Brush GetHighlightedBrush()
+        public SolidColorBrush GetHighlightedBrush()
         {
             return this.highlightLineColor;
         }
-        public void SetHighlightedBrush(Brush highlightLineColor)
+        public void SetHighlightedBrush(SolidColorBrush highlightLineColor)
         {
             this.highlightLineColor = highlightLineColor;
         }

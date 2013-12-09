@@ -616,10 +616,10 @@ namespace SketchyGraph
                     else if (bgraph.type == "BarChart" && !bgraph.hasbeendrawn)
                     {
                         bgraph.CalculateBoundingBoxes(extraspace_chart);
-                        DrawRectangle(((AxisPlot)bgraph).bb, Brushes.Blue);
-                        DrawRectangle(((AxisPlot)bgraph).x_bounds, Brushes.Red);
-                        DrawRectangle(((AxisPlot)bgraph).y_bounds, Brushes.Black);
-                        DrawRectangle(((AxisPlot)bgraph).plot_bound, Brushes.DarkOrange);
+                        //DrawRectangle(((AxisPlot)bgraph).bb, Brushes.Blue);
+                        //DrawRectangle(((AxisPlot)bgraph).x_bounds, Brushes.Red);
+                        //DrawRectangle(((AxisPlot)bgraph).y_bounds, Brushes.Black);
+                        //DrawRectangle(((AxisPlot)bgraph).plot_bound, Brushes.DarkOrange);
                         bgraph.hasbeendrawn = true;
                     }
                     else if (bgraph.type == "BarChart" && bgraph.hasbeendrawn)
@@ -874,10 +874,10 @@ namespace SketchyGraph
                         else if (bgraph.type == "BarChart" && !bgraph.hasbeendrawn)
                         {
                             bgraph.CalculateBoundingBoxes(extraspace_chart);
-                            DrawRectangle(((AxisPlot)bgraph).bb, Brushes.Blue);
-                            DrawRectangle(((AxisPlot)bgraph).x_bounds, Brushes.Red);
-                            DrawRectangle(((AxisPlot)bgraph).y_bounds, Brushes.Black);
-                            DrawRectangle(((AxisPlot)bgraph).plot_bound, Brushes.DarkOrange);
+                            //DrawRectangle(((AxisPlot)bgraph).bb, Brushes.Blue);
+                            //DrawRectangle(((AxisPlot)bgraph).x_bounds, Brushes.Red);
+                            //DrawRectangle(((AxisPlot)bgraph).y_bounds, Brushes.Black);
+                            //DrawRectangle(((AxisPlot)bgraph).plot_bound, Brushes.DarkOrange);
                             bgraph.hasbeendrawn = true;
                         }
                         else if (bgraph.type == "PieChart" &&!bgraph.hasbeendrawn)
@@ -930,11 +930,12 @@ namespace SketchyGraph
                     }
                     else
                     {
+                        SolidColorBrush brsh = new SolidColorBrush(ClrPcker_Background.SelectedColor);
                         foreach (Line tempLine in tempLineList)
                         {
-                            tempLine.Stroke = Brushes.Yellow;
+                            tempLine.Stroke = brsh;
                         }
-                        sObj.SetHighlightedBrush(Brushes.Yellow);
+                        sObj.SetHighlightedBrush(brsh);
                         sObj.SetHighlightedLines(tempLineList);
                     }
                     break;
