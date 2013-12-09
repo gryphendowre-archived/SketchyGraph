@@ -37,5 +37,13 @@ namespace SketchyGraph
                                 dataString, leftString, rightString);
         }
 
+        public string Traverse()
+        {
+            var leftString = this.Left != null ? this.Left.Traverse() : "";
+            var rightString = this.Right != null ? this.Right.Traverse() : "";
+            var dataString = this.Data != null ? this.Data.ToString() : "";
+            return String.Format("{0}{1}{2}", leftString, dataString, rightString);
+        }
+
     }
 }

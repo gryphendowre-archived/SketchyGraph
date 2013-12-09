@@ -8,6 +8,7 @@ using System.Windows.Controls;
 using System.Windows.Shapes;
 using System.Windows.Ink;
 using System.Windows.Ink;
+using NCalc;
 
 namespace SketchyGraph
 {
@@ -18,18 +19,23 @@ namespace SketchyGraph
 
         public double value;
         public bool state = true;
+        public bool modified = false;
         Queue queue = new Queue();
         Node<string> tree;
 
-        public string parse(List<Samples> samples)
+        public void parse(List<Samples> samples)
         {
             string val = "";
+            queue.Clear();
+            List<Stroke> operation_copy = new List<Stroke>();
+            foreach (Stroke str in operation)
+                operation_copy.Add(str.Clone());
             tree = new Node<string>("");
-            while (operation.Count != 0)
+            while (operation_copy.Count != 0)
             {
-                Stroke sel = operation[0];
-                operation.RemoveAt(0);
-                Tuple<List<Stroke>, List<int>> check = Utils.RobustIntersection(sel, operation);
+                Stroke sel = operation_copy[0];
+                operation_copy.RemoveAt(0);
+                Tuple<List<Stroke>, List<int>> check = Utils.RobustIntersection(sel, operation_copy);
                 if (check.Item1.Count == 1)
                 {
                     Tuple<double, string, double> eval = Recognizer.RecognizedSelected(check.Item1, false, samples);
@@ -47,7 +53,7 @@ namespace SketchyGraph
                         val += eval.Item2;
                     }
                     foreach (int index in check.Item2)
-                        operation.RemoveAt(index);
+                        operation_copy.RemoveAt(index);
                 }
             }
             string number = "";
@@ -65,7 +71,9 @@ namespace SketchyGraph
                 queue.Enqueue(number);
 
             BuildTree();
-            return val;
+            string expression = tree.Traverse();
+            NCalc.Expression res = new NCalc.Expression(expression);
+            this.value = Convert.ToDouble(res.Evaluate().ToString());
         }
 
         public void BuildTree()
@@ -92,17 +100,13 @@ namespace SketchyGraph
                 {
                     tree.Data = el;
                 }
-                i++;
-                if (i == queue.Count - 2)
-                {
-                    break;
-                }
             }
         }
 
         public RangeValue(RangeValue rv) {
             this.number = Clone(rv.number);
             this.value = rv.value;
+            this.modified = true;
         }
 
         public RangeValue(Unistroke u, Stroke e) {
@@ -110,15 +114,19 @@ namespace SketchyGraph
             {
                 number.Add(u);
                 operation.Add(e);
-                this.value = this.getNumericalValue();
             }
             else
             {
                 int index = getMePositioninListByBB(u);
                 number.Insert(index, u);
                 operation.Insert(index, e);
-                this.value = this.getNumericalValue();
             }
+            this.modified = true;
+        }
+
+        public RangeValue(Stroke e) {
+            operation.Add(e);
+            this.modified = true;
         }
 
         public List<Unistroke> Clone(List<Unistroke> lu) {
@@ -133,7 +141,6 @@ namespace SketchyGraph
             //Array.Sort(number.ToArray(), Unistroke.sortUnistrokeAscending());
             //number.ToList();
             double q = this.getNumericalValue();
-            int a = 8;
         }
 
         public int getMePositioninListByBB(Unistroke newu) {
@@ -158,6 +165,13 @@ namespace SketchyGraph
             foreach (Unistroke u in number) {
                 listp.AddRange(u.points);
             }
+            return Unistroke.BoundingBox(listp);
+        }
+
+        public Rect getBounds() { 
+            List<Point> listp = new List<Point>();
+            foreach(Stroke e in this.operation)
+                listp.AddRange(Utils.TransformStrokeToListPoints(e));
             return Unistroke.BoundingBox(listp);
         }
 
