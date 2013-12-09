@@ -645,8 +645,8 @@ namespace SketchyGraph
                                         rv.parse(this.samples_numbers);                                   
                                     bgraph.ResetDomainModifiedFlag();
                                     ValidateWrongValues(bgraph, bgraph.validateRangeValues());
-                                    if (bgraph.rval.Count != 0)
-                                        bgraph.maxRange = bgraph.rval[0].value;
+                                    if (bgraph.domain.Count != 0)
+                                        bgraph.maxDomain = bgraph.domain[0].value;
                                     double a = 5.0;
                                 }
                                 else
@@ -712,14 +712,18 @@ namespace SketchyGraph
                                 double width = 1.0;
                                 StylusPointCollection newpoints = new StylusPointCollection();
                                 Element selected_el = new Element();
-                                foreach (Element el in bgraph.elements) { 
-                                    if(el.isInsidePlot(new Point(e.Stroke.StylusPoints[0].X, e.Stroke.StylusPoints[0].Y))){
+                                foreach (Element el in bgraph.elements) {
+                                    if (el.isInsidePlot(new Point(e.Stroke.StylusPoints[0].X, e.Stroke.StylusPoints[0].Y)))
+                                    {
                                         Rect bbel = Unistroke.BoundingBox(el.plot.points);
                                         width = bbel.Width;
-                                        newpoints.Add(new StylusPoint(bbel.Left + (bbel.Width /2), bbel.Top));
-                                        newpoints.Add(new StylusPoint(bbel.Left + (bbel.Width /2), bbel.Bottom));
+                                        newpoints.Add(new StylusPoint(bbel.Left + (bbel.Width / 2), bbel.Top));
+                                        newpoints.Add(new StylusPoint(bbel.Left + (bbel.Width / 2), bbel.Bottom));
                                         selected_el = el;
                                     }
+                                    /*else { 
+                                       XY 
+                                    }*/
                                 }
                                 if (newpoints.Count > 0)
                                 {
