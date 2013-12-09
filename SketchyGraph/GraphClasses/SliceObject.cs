@@ -27,6 +27,7 @@ namespace SketchyGraph.GraphClasses
         public bool justUpdated = false;
         public bool tagged = false;
         public bool manipulated = false;
+        private Brush highlightLineColor;
 
         public SliceObject()
         {
@@ -55,6 +56,7 @@ namespace SketchyGraph.GraphClasses
             dataValBox.FontSize = 20;
             dataValBox.Text = "";
             dataValBox.Background = Brushes.White;
+            this.highlightLineColor = Brushes.White;
         }
 
         public Point CalculateTextboxLocation(Circle circle, double factor)
@@ -136,7 +138,7 @@ namespace SketchyGraph.GraphClasses
                 newColor.X2 = circle.Center.X + ((circle.Radius * 0.97) * Math.Cos((-(i + 1 + angleRightOffset)) * Math.PI / 180.0));
                 newColor.Y1 = line2.Y1;
                 newColor.Y2 = circle.Center.Y + ((circle.Radius * 0.97) * Math.Sin((-(i + 1 + angleRightOffset)) * Math.PI / 180.0));
-                newColor.Stroke = Brushes.White;
+                newColor.Stroke = highlightLineColor;
                 newColor.StrokeThickness = 4;
 
                 this.highlightedLines.Add(newColor);
@@ -149,7 +151,7 @@ namespace SketchyGraph.GraphClasses
                 newColor.X2 = circle.Center.X + ((circle.Radius * 0.97) * Math.Cos((i + 1 - angleLeftOffset) * Math.PI / 180.0));
                 newColor.Y1 = line2.Y1;
                 newColor.Y2 = circle.Center.Y + ((circle.Radius * 0.97) * Math.Sin((i + 1 - angleLeftOffset) * Math.PI / 180.0));
-                newColor.Stroke = Brushes.White;
+                newColor.Stroke = highlightLineColor;
                 newColor.StrokeThickness = 4;
 
                 this.highlightedLines.Add(newColor);
@@ -206,6 +208,14 @@ namespace SketchyGraph.GraphClasses
         public void SetHighlightedLines(List<Line> highlightedLines)
         {
             this.highlightedLines = highlightedLines;
+        }
+        public Brush GetHighlightedBrush()
+        {
+            return this.highlightLineColor;
+        }
+        public void SetHighlightedBrush(Brush highlightLineColor)
+        {
+            this.highlightLineColor = highlightLineColor;
         }
         #endregion
     }

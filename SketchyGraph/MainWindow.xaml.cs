@@ -783,6 +783,7 @@ namespace SketchyGraph
                         {
                             tempLine.Stroke = Brushes.Yellow;
                         }
+                        sObj.SetHighlightedBrush(Brushes.Yellow);
                         sObj.SetHighlightedLines(tempLineList);
                     }
                     break;
@@ -984,6 +985,14 @@ namespace SketchyGraph
                             ln.Stroke = Brushes.White;
                         }
                         AddOrUpdatePieInformation(sliceObjHold, true, false);
+                    }
+                    if (sliceObjHold.tagged == true)
+                    {
+                        List<Line> cleanup2 = sliceObjHold.GetHighLightedLines();
+                        foreach(Line ln in cleanup2)
+                        {
+                            ln.Stroke = sliceObjHold.GetHighlightedBrush();
+                        }
                     }
                     sliceObjHold.tagged = false;
                     if (sliceObjHold.manipulated == true)
