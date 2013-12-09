@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Windows.Ink;
 
 namespace SketchyGraph
 {
@@ -9,6 +10,7 @@ namespace SketchyGraph
     {
         public string val { get; set; }
         public Unistroke stroke_val { get; set; }
+        public Stroke str { get; set; }
         public double y_val;
         public double x_val;
 

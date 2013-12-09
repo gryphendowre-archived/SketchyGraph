@@ -18,6 +18,11 @@ namespace SketchyGraph
         public bool hasbeendrawn = false;
         public double thresh = 10.0;
         public List<RangeValue> rval = new List<RangeValue>();
+        public List<RangeValue> right_rval = new List<RangeValue>();
+
+        public List<RangeValue> domain = new List<RangeValue>();
+        public List<RangeValue> right_domain = new List<RangeValue>();
+
         public List<Element> elements = new List<Element>();
         public bool blocked = false;
 
@@ -132,6 +137,28 @@ namespace SketchyGraph
             }
         }
 
+        public void AddDomainValue(Stroke e)
+        {
+            if (rval.Count == 0)
+                rval.Add(new RangeValue(e));
+            else
+            {
+                Rect r = e.GetBounds();
+                int i = getIndexofRangeValues(r);
+                if (i >= rval.Count)
+                    rval.Add(new RangeValue(e));
+                else
+                {
+                    rval[i].operation.Add(e);
+                    rval[i].modified = true;
+                }
+            }
+            if (rval.Count > 1)
+            {
+                this.quicksort(this.rval, 0, this.rval.Count - 1);
+            }
+        }
+
         public List<RangeValue> validateRangeValues(){
             List<RangeValue> redvals = new List<RangeValue>();
             foreach(RangeValue rv in this.rval)
@@ -217,10 +244,15 @@ namespace SketchyGraph
 
         public int getIndexofRangeValues(double rtop)
         {
-            int i = 0;
+            while (right_rval.Count != 0)
+                right_rval.RemoveAt(0);
             foreach (RangeValue rv in rval)
+                if(rv.state)
+                    this.right_rval.Add(rv);
+            int i = 0;
+            foreach (RangeValue rv in this.right_rval)
             {
-                Rect rt = rv.getBoundingBox();
+                Rect rt = rv.getBounds();
                 double centroid = rt.Top + (rt.Height / 2);
                 if (rtop < centroid + thresh)
                 {
