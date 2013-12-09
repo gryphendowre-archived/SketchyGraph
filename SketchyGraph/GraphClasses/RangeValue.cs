@@ -78,7 +78,7 @@ namespace SketchyGraph
             if (expression != "")
             {
                 char c = expression[expression.Length-1];
-                if (char.IsDigit(c))
+                if (c != '+' && c!='-' )
                 {
                     NCalc.Expression res = new NCalc.Expression(expression);
                     this.value = Convert.ToDouble(res.Evaluate().ToString());

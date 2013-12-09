@@ -11,7 +11,7 @@ namespace SketchyGraph
     {
         public double maxRange;
         public int minRange = 0;
-        public int maxDomain;
+        public double maxDomain;
         public int minDomain = 0;
         public string type;
         public bool hasbeenmodified = false;
