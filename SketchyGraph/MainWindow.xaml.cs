@@ -46,12 +46,20 @@ namespace SketchyGraph
         bool prepareToSetName = false;
         double extraspace_chart = 40.0;
         string potentialPieObjectName = "";
+        bool movingMode = false;
+        bool secondPass = false;
+        Circle selectedCircle;
+        PieChart selectedChart;
+        Line selectedLine = new Line();
 
         public MainWindow()
         {
             InitializeComponent();
+            Stylus.SetIsPressAndHoldEnabled(PaperInk, false);
             PaperInk.AddHandler(InkCanvas.MouseDownEvent, new MouseButtonEventHandler(PaperInk_MouseDown), true);
             PaperInk.AddHandler(InkCanvas.StylusDownEvent, new StylusDownEventHandler(PaperInk_StylusDown), true);
+            PaperInk.AddHandler(InkCanvas.TouchDownEvent, new RoutedEventHandler(PaperInk_TouchDown), true);
+            PaperInk.AddHandler(InkCanvas.TouchUpEvent, new RoutedEventHandler(PaperInk_TouchUp), true);
             PaperInk.DefaultDrawingAttributes = _regularPen;
             PaperInk.EditingMode = InkCanvasEditingMode.Ink;
             PaperInk.DefaultDrawingAttributes.Color = Colors.Black;
@@ -79,6 +87,112 @@ namespace SketchyGraph
             };
 
         #region ExtraHandlers
+
+        public void PaperInk_TouchDown(object sender, RoutedEventArgs e)
+        {
+            Point mouseP = Mouse.GetPosition(PaperInk);
+            if (movingMode == true)
+            {
+                PaperInk.EditingMode = InkCanvasEditingMode.None;
+                secondPass = true;
+            }
+            else
+            {
+                foreach (BaseGraph bgraph in graphs)
+                {
+                    if (bgraph.type == "PieChart")
+                    {
+                        int i = 0;
+                        foreach (Circle grbC in ((PieChart)bgraph).grabbingCircles)
+                        {
+                            Point topLeft = new Point(grbC.Center.X - grbC.Radius, grbC.Center.Y - grbC.Radius);
+                            Point BottomRight = new Point(grbC.Center.X + grbC.Radius, grbC.Center.Y + grbC.Radius);
+                            Rect x = new Rect(topLeft, BottomRight);
+
+                            if (mouseP.X >= topLeft.X && mouseP.Y >= topLeft.Y && mouseP.X <= BottomRight.X && mouseP.Y <= BottomRight.Y)
+                            {
+                                PaperInk.EditingMode = InkCanvasEditingMode.None;
+                                movingMode = true;
+                                selectedCircle = grbC;
+                                selectedLine = ((PieChart)bgraph).GetSliceLines()[i];
+                                selectedChart = ((PieChart)bgraph);
+                            }
+                            i++;
+                        }
+                    }
+                }
+            }
+            
+            PaperInk.EditingMode = InkCanvasEditingMode.Ink;
+        }
+
+        public void PaperInk_TouchUp(object sender, RoutedEventArgs e)
+        {
+            if (movingMode == true && secondPass == true)
+            {
+                Point mouseP = Mouse.GetPosition(PaperInk);
+                
+                Line newLine = new Line();
+                newLine.X1 = selectedLine.X1;
+                newLine.Y1 = selectedLine.Y1;
+                newLine.X2 = mouseP.X;
+                newLine.Y2 = mouseP.Y;
+
+                Vector v1 = new Vector(newLine.X1 - newLine.X2, newLine.Y1 - newLine.Y2);
+                Vector v2 = new Vector(selectedLine.X1 - selectedLine.X2, selectedLine.Y1 - selectedLine.Y2);
+
+                Vector checkV;
+
+                double angleNum = Vector.AngleBetween(v1, v2);
+
+                if (angleNum < 0)
+                    angleNum = angleNum + 360.0;
+
+                if (angleNum <= 180)
+                {
+                    checkV = new Vector((-1.0) * (newLine.X1 - newLine.X2), (-1.0) * (newLine.Y1 - newLine.Y2));
+                }
+                else
+                {
+                    checkV = new Vector((-1.0) * (newLine.X1 - newLine.X2), (-1.0)*(newLine.Y1 - newLine.Y2));
+                }
+                double radius = GeneralUtil.EuclideanDistance(new Point(selectedLine.X1, selectedLine.Y1), new Point(selectedLine.X2, selectedLine.Y2));
+                checkV.Normalize();
+                //RotateTransform rotateTransform = new RotateTransform(angleNum);
+                //rotateTransform.CenterX = selectedLine.X1;
+                //rotateTransform.CenterY = selectedLine.Y1;
+                //selectedLine.RenderTransform = rotateTransform;
+                //Geometry el = selectedLine.RenderedGeometry;
+                selectedLine.X2 = selectedLine.X1 + (radius * checkV.X);
+
+                selectedLine.Y2 = selectedLine.Y1 + (radius * checkV.Y);
+
+                foreach (BaseGraph bgraph in graphs)
+                {
+                    if (bgraph.Equals(selectedChart))
+                    {
+                        List<Line> linList = ((PieChart)bgraph).GetSliceLines();
+                        foreach (SliceObject sobJ in ((PieChart)bgraph).GetSliceObjects())
+                        {
+                            if (sobJ.GetLine1().Equals(selectedLine) || sobJ.GetLine2().Equals(selectedLine))
+                                sobJ.manipulated = true;
+                        }
+                        ((PieChart)bgraph).UpdateLines();
+                        UpdateAndRedrawPieStuff((PieChart)bgraph);
+                        foreach (SliceObject sobj in ((PieChart)bgraph).GetSliceObjects())
+                        {
+                            AddOrUpdatePieInformation(sobj, false, true);
+                        }
+                    }
+                }
+
+                movingMode = false;
+                secondPass = false;
+                selectedLine = new Line();
+                selectedCircle = null;
+            }
+        }
+
         public void PaperInk_StylusDown(object sender, StylusDownEventArgs e)
         {
             Point mouseP = Mouse.GetPosition(PaperInk);
@@ -641,7 +755,7 @@ namespace SketchyGraph
                 bool check = false;
                 if (sObj.justUpdated == false)
                 {
-                    AddOrUpdatePieInformation(sObj, false);
+                    AddOrUpdatePieInformation(sObj, false, false);
                     continue;
                 }
                 foreach (Line tempLine in tempLineList)
@@ -658,7 +772,7 @@ namespace SketchyGraph
                     if (this.prepareToSetName == true)
                     {
                         Debug.WriteLine("Sets Name");
-                        AddOrUpdatePieInformation(sObj, false);
+                        AddOrUpdatePieInformation(sObj, false, false);
                         this.potentialPieObjectName = "";
                         
                         prepareToSetName = false;
@@ -669,13 +783,14 @@ namespace SketchyGraph
                         {
                             tempLine.Stroke = Brushes.Yellow;
                         }
+                        sObj.SetHighlightedLines(tempLineList);
                     }
                     break;
                 }
             }
         }
 
-        public void AddOrUpdatePieInformation(SliceObject sObj, bool updateTrue)
+        public void AddOrUpdatePieInformation(SliceObject sObj, bool updateTrue, bool manipulationFinished)
         {
             //if (sObj.dataNameBox
             if (PaperInk.Children.Contains(sObj.dataNameBox))
@@ -683,9 +798,25 @@ namespace SketchyGraph
             if (PaperInk.Children.Contains(sObj.dataValBox))
                 PaperInk.Children.Remove(sObj.dataValBox);
 
-            if (updateTrue == false)
+            if (updateTrue == false && manipulationFinished == false)
             {               
                 sObj.SetDataName(this.potentialPieObjectName);
+                sObj.dataNameBox.Text = sObj.GetDataName();
+                sObj.dataValBox.Text = sObj.GetPercentage() + "%";
+                PaperInk.Children.Add(sObj.dataNameBox);
+                PaperInk.Children.Add(sObj.dataValBox);
+                InkCanvas.SetTop(sObj.dataNameBox, sObj.textLocation.Y);
+                InkCanvas.SetLeft(sObj.dataNameBox, sObj.textLocation.X);
+                InkCanvas.SetTop(sObj.dataValBox, sObj.dataLocation.Y);
+                InkCanvas.SetLeft(sObj.dataValBox, sObj.dataLocation.X);
+            }
+            else if (updateTrue == true && manipulationFinished == true)
+            {
+                sObj.dataNameBox.Text = "";
+                sObj.dataValBox.Text = "";
+            }
+            else if (updateTrue == false && manipulationFinished == true)
+            {
                 sObj.dataNameBox.Text = sObj.GetDataName();
                 sObj.dataValBox.Text = sObj.GetPercentage() + "%";
                 PaperInk.Children.Add(sObj.dataNameBox);
@@ -838,7 +969,7 @@ namespace SketchyGraph
                 line.X2 = e.StylusPoints[0].X;
                 line.Y2 = e.StylusPoints[0].Y;
             }
-
+            line.IsHitTestVisible = true;
             ((PieChart)bgraph).addSlices(line);
 
             if (((PieChart)bgraph).holdingList.Count > 1)
@@ -847,16 +978,31 @@ namespace SketchyGraph
                 {
                     if (sliceObjHold.tagged == false)
                     {
-                        AddOrUpdatePieInformation(sliceObjHold, true);
+                        List<Line> cleanup = sliceObjHold.GetHighLightedLines();
+                        foreach (Line ln in cleanup)
+                        {
+                            ln.Stroke = Brushes.White;
+                        }
+                        AddOrUpdatePieInformation(sliceObjHold, true, false);
                     }
                     sliceObjHold.tagged = false;
+                    if (sliceObjHold.manipulated == true)
+                    {
+                        AddOrUpdatePieInformation(sliceObjHold, true, true);
+                        sliceObjHold.manipulated = false;
+                    }
                 }
             }
 
-            if (((PieChart)bgraph).GetModifiedStatus())
+            UpdateAndRedrawPieStuff(((PieChart)bgraph));
+        }
+
+        public void UpdateAndRedrawPieStuff(PieChart bgraph)
+        {
+            if (bgraph.GetModifiedStatus())
             {
                 List<List<Line>> tempList = new List<List<Line>>();
-                foreach (SliceObject sObj in ((PieChart)bgraph).GetSliceObjects())
+                foreach (SliceObject sObj in (bgraph.GetSliceObjects()))
                 {
                     tempList.Add(sObj.GetHighLightedLines());
                 }
@@ -865,26 +1011,29 @@ namespace SketchyGraph
                     foreach (Line lineObj in lineList)
                     {
                         if (PaperInk.Children.Contains(lineObj))
+                        {
+                            lineObj.Stroke = Brushes.White;
                             PaperInk.Children.Remove(lineObj);
+                        }
                     }
                 }
-                
+
             }
-            if (((PieChart)bgraph).GetSliceObjects().Count > 1)
+            if (bgraph.GetSliceObjects().Count > 1)
             {
-                foreach (SliceObject sObj in ((PieChart)bgraph).GetSliceObjects())
+                foreach (SliceObject sObj in (bgraph.GetSliceObjects()))
                 {
                     foreach (Line lineObject in sObj.GetHighLightedLines())
                     {
                         PaperInk.Children.Add(lineObject);
                     }
-                    
+
                 }
-                ((PieChart)bgraph).SetModifiedStatus(false);
+                bgraph.SetModifiedStatus(false);
             }
 
             //Redraw Slice Lines
-            foreach (Line lineSlice in ((PieChart)bgraph).GetSliceLines())
+            foreach (Line lineSlice in bgraph.GetSliceLines())
             {
                 if (PaperInk.Children.Contains(lineSlice))
                     PaperInk.Children.Remove(lineSlice);
@@ -894,6 +1043,7 @@ namespace SketchyGraph
                 PaperInk.Children.Add(lineSlice);
             }
         }
+
         /*
          * Method used to draw the rectangles representing the information boxes of a bar/point graph.
          */ 
@@ -1096,6 +1246,15 @@ namespace SketchyGraph
                 foreach (RangeValue rv in graph.rval)
                     resultstxt.Text += rv.value + "\n";
                 resultstxt.Text += "\n";
+                if (graph.type == "PieChart")
+                {
+                    List<SliceObject> slc = ((PieChart)graph).GetSliceObjects();
+                    foreach (SliceObject sObj in slc)
+                    {
+                        AddOrUpdatePieInformation(sObj, false, true);
+                    }
+                    //AddOrUpdatePieInformation(SliceObject sObj, bool updateTrue, bool manipulationFinished)
+                }
             }
         }
 

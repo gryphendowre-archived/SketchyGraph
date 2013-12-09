@@ -16,6 +16,7 @@ namespace SketchyGraph.GraphClasses.Charts
         protected Stroke circumference;
         protected List<Stroke> slices;
         protected List<Line> sliceLines;
+        public List<Circle> grabbingCircles;
         protected List<SliceObject> sliceObjects;
         protected List<Point> circumPoints;
         protected Rect boundingBox;
@@ -40,6 +41,7 @@ namespace SketchyGraph.GraphClasses.Charts
             this.rightSideMed = CalculateRightPoint();
             this.modified = false;
             this.holdingList = new List<SliceObject>();
+            this.grabbingCircles = new List<Circle>();
         }
         #endregion
 
@@ -57,13 +59,34 @@ namespace SketchyGraph.GraphClasses.Charts
         public void addSlices(Line slice)
         {
             sliceLines.Add(slice);
+            
             if (sliceLines.Count > 1)
             {
+                grabbingCircles.Clear();
                 this.sliceLines = PieSort();
+                foreach (Line slc in this.sliceLines)
+                {
+                    Circle tempC = new Circle(new Point(slc.X2, slc.Y2), 20);
+                    grabbingCircles.Add(tempC);
+                }
                 holdingList = new List<SliceObject>(CreateAndReorderSliceObjects());
                 this.modified = true;
 
             }
+        }
+
+        public List<SliceObject> UpdateLines()
+        {
+            grabbingCircles.Clear();
+            this.sliceLines = PieSort();
+            foreach(Line slc in this.sliceLines)
+            {
+                Circle tempC = new Circle(new Point(slc.X2, slc.Y2), 10);
+                grabbingCircles.Add(tempC);
+            }
+            holdingList = new List<SliceObject>(CreateAndReorderSliceObjects());
+            this.modified = true;
+            return holdingList;
         }
 
         //Keeps the actual stroke drawn stored.
@@ -256,14 +279,15 @@ namespace SketchyGraph.GraphClasses.Charts
             foreach (SliceObject sObj in sliceObjects)
             {
                 //sObj.tagged = false;
-                if (sObj.newSlice == true)
+                if (sObj.newSlice == true || sObj.manipulated == true)
                 {
                     sObj.SetAngle(CalculateDegrees(sObj));
                 }
+                
             }
             foreach (SliceObject sObj in sliceObjects)
             {
-                if (sObj.newSlice == true)
+                if (sObj.newSlice == true || sObj.manipulated == true)
                 {
                     sObj.CreatePath(area, this.rightSideMed);
                     sObj.justUpdated = true;

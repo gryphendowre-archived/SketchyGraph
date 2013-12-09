@@ -26,6 +26,7 @@ namespace SketchyGraph.GraphClasses
         public bool newSlice = true;
         public bool justUpdated = false;
         public bool tagged = false;
+        public bool manipulated = false;
 
         public SliceObject()
         {
@@ -136,7 +137,7 @@ namespace SketchyGraph.GraphClasses
                 newColor.Y1 = line2.Y1;
                 newColor.Y2 = circle.Center.Y + ((circle.Radius * 0.97) * Math.Sin((-(i + 1 + angleRightOffset)) * Math.PI / 180.0));
                 newColor.Stroke = Brushes.White;
-                newColor.StrokeThickness = 2;
+                newColor.StrokeThickness = 4;
 
                 this.highlightedLines.Add(newColor);
             }
@@ -149,7 +150,7 @@ namespace SketchyGraph.GraphClasses
                 newColor.Y1 = line2.Y1;
                 newColor.Y2 = circle.Center.Y + ((circle.Radius * 0.97) * Math.Sin((i + 1 - angleLeftOffset) * Math.PI / 180.0));
                 newColor.Stroke = Brushes.White;
-                newColor.StrokeThickness = 2;
+                newColor.StrokeThickness = 4;
 
                 this.highlightedLines.Add(newColor);
             }
@@ -201,6 +202,10 @@ namespace SketchyGraph.GraphClasses
         public List<Line> GetHighLightedLines()
         {
             return this.highlightedLines;
+        }
+        public void SetHighlightedLines(List<Line> highlightedLines)
+        {
+            this.highlightedLines = highlightedLines;
         }
         #endregion
     }
